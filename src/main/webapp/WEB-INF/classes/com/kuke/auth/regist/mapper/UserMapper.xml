@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.regist.mapper.UserMapper">
+	<sql id="mysqlPage">
+		<if test="rows != 0">
+			LIMIT #{offset},#{rows}
+		</if>
+	</sql>
+	<insert id="createUser" parameterType="com.kuke.auth.regist.domain.User">
+		<![CDATA[
+			REPLACE INTO auth.user_base (id, org_id, password, type, email, reg_date, end_date, isactive, name) 
+			VALUES (#{id}, #{org_id}, #{password}, #{type}, #{email}, now(), DATE_FORMAT(#{end_date},'%Y-%m-%d %k:%i:%s'), #{isactive}, #{name})
+		]]>
+
+	</insert>
+
+	<insert id="addSnsUser">
+		<![CDATA[
+			INSERT INTO auth.user_base (id, from_client,org_id, password, type, email, reg_date, end_date, isactive, name) 
+			VALUES (#{user.id}, #{user.from_client},#{user.org_id}, #{user.password}, #{user.type}, #{user.email}, now(), DATE_FORMAT(#{user.end_date},'%Y-%m-%d %k:%i:%s'), #{user.isactive}, #{user.name})
+		]]>
+
+	</insert>
+
+	<select id="checkUserByName" resultType="String">
+			<![CDATA[
+			SELECT user_id
+    		FROM auth.user_base_pertain
+   			WHERE nick_name = #{nickName} LIMIT 1
+   			]]>
+	</select>
+	
+	<select id="getUserIdStartWith" resultType="String">
+		<![CDATA[
+			SELECT user_id
+    		FROM auth.user_base_pertain
+   			WHERE nick_name LIKE #{nickName}
+		]]>
+	</select>
+	
+	<select id="checkUserByMail" resultType="String">
+			<![CDATA[
+			SELECT id
+    		FROM auth.user_base
+   			WHERE email = #{email} LIMIT 1
+   			]]>
+	</select>
+	<select id="getUserInfo" resultType="com.kuke.auth.regist.domain.User">
+			<![CDATA[
+			SELECT id,password, org_id, name, email,extra_email, type, reg_date, end_date, isactive,user_image AS image,p.nick_name,
+			real_name,province,city,sex,birthday,constellation,one_of12animals,blood_type,phone,QQ,MSN,about_me,p.points,signature
+			FROM auth.user_base b  LEFT JOIN auth.user_base_pertain p ON b.id = p.user_id 
+			WHERE b.id = #{id}
+   			]]>
+	</select>
+	
+	<select id="getUserByEmail" resultType="com.kuke.auth.regist.domain.User">
+			<![CDATA[
+			SELECT id, org_id, name, email, type, reg_date, end_date, isactive,user_image AS image
+			FROM auth.user_base b  INNER JOIN auth.user_base_pertain p ON b.id = p.user_id 
+			WHERE b.email = #{email}
+   			]]>
+	</select>
+	
+	<select id="getUserByPhone" resultType="com.kuke.auth.regist.domain.User">
+			<![CDATA[
+			SELECT id, org_id, name, email, type, reg_date, end_date, isactive,user_image AS image
+			FROM auth.user_base b  INNER JOIN auth.user_base_pertain p ON b.id = p.user_id 
+			WHERE b.phone = #{phone}
+   			]]>
+	</select>
+	
+	<insert id="addUserPertain" parameterType="com.kuke.auth.regist.domain.User">
+		<![CDATA[
+			REPLACE INTO auth.user_base_pertain (user_id, nick_name,last_date,user_image) VALUES (#{id}, #{nick_name},now(),#{image})
+		]]>
+	</insert>
+	
+	<insert id="addUserActionlog" parameterType="java.util.List">
+        INSERT INTO log.user_action_log(user_id,user_type,action_type,start_state,end_state,operator_ip,operator_date,channel_type) 
+					VALUES
+        <foreach collection="userActionList" item="item" index="index"  
+            separator=",">  
+            ( #{item.user_id},#{item.user_type}, #{item.action_type},  
+            #{item.start_state}, #{item.end_state},  
+            #{item.operator_ip}, #{item.operator_date},  
+            #{item.channel_type})  
+        </foreach>
+    </insert>  
+	<insert id="addUserRegistlog" parameterType="com.kuke.auth.regist.domain.UserActionLog">
+		<![CDATA[
+				INSERT INTO log.user_action_log(user_id,action_type,start_state,end_state,operator_ip,operator_date,channel_type) 
+					VALUES(#{user_id},#{action_type},#{start_state},#{end_state},#{operator_ip},now(),#{channel_type})		
+		]]>
+	</insert>
+	<insert id="addUserListenLog" parameterType="java.util.List">
+     		INSERT INTO log.user_listen_log(l_code,item_code,listen_user_id,listen_type,listen_date,
+	from_client,cname,ename,listen_ip,channel_type,ischarged,org_user_id) 
+			VALUES
+			<foreach collection="userListenList" item="item" index="index" 
+            separator=",">
+	            (#{item.l_code},#{item.item_code}, #{item.listen_user_id},  
+	            #{item.listen_type}, #{item.listen_date},#{item.from_client},
+	            #{item.cname},#{item.ename},#{item.listen_ip},
+	            #{item.channel_type},#{item.ischarged},#{item.org_user_id})  
+    		</foreach>
+  	</insert>
+  	<insert id="addUserDownLog" parameterType="java.util.List">
+     		INSERT INTO log.user_download_log(item_code,l_code,cname,ename,
+			down_date,down_ip,down_type,user_id,user_type,from_client,channel_type)
+			VALUES
+			<foreach collection="userDownList" item="item" index="index" 
+            separator=",">
+	            (#{item.item_code}, #{item.l_code},  
+	            #{item.cname},#{item.ename},#{item.down_date},  
+	            #{item.down_ip},#{item.down_type},
+	            #{item.user_id},#{item.user_type},#{item.from_client},
+	            #{item.channel_type})  
+    		</foreach>
+  	</insert>    
+	<update id="updateUserActive" parameterType="com.kuke.auth.regist.domain.User">
+		<![CDATA[
+			UPDATE auth.user_base SET isactive=#{isactive} WHERE id=#{id}
+		]]>
+	</update>	
+
+	<update id="resetPassByEmail" >
+		<![CDATA[
+			UPDATE auth.user_base SET password=#{password} WHERE email=#{email}
+		]]>
+	</update>	
+	
+	<update id="resetPassByPhone" >
+		<![CDATA[
+			UPDATE auth.user_base SET password=#{password} WHERE phone=#{phone}
+		]]>
+	</update>	
+	
+	<update id="updateUserPass" >
+		<![CDATA[
+			UPDATE auth.user_base SET password=#{md5Pass} WHERE id=#{id}
+		]]>
+	</update>	
+	<update id="updateUserEmail" >
+		<![CDATA[
+			UPDATE auth.user_base SET email=#{email} WHERE id=#{userId}
+		]]>
+	</update>
+	<update id="updateUserInf" >
+			UPDATE auth.user_base b,auth.user_base_pertain p 
+			SET 
+			<if test="map.nickname != null">
+				p.nick_name=#{map.nickname} ,
+			</if>
+			<if test="map.signature != null">
+				signature=#{map.signature} ,
+			</if>
+			<if test="map.sex != null">
+				sex=#{map.sex} ,
+			</if>
+			<if test="map.birthday != null">
+				birthday=#{map.birthday} ,
+			</if>
+			<if test="map.constellation != null">
+				constellation=#{map.constellation} ,
+			</if>
+			<if test="map.province != null">
+				province=#{map.province} ,
+			</if>
+			<if test="map.city != null">
+				city=#{map.city} ,
+			</if>
+			p.last_date=now()
+			WHERE b.id = p.user_id and b.id=#{map.id}
+	</update>
+	<!-- 修改昵称 -->
+	<update id="updateNickName" >
+		<![CDATA[
+			UPDATE auth.user_base b,auth.user_base_pertain p 
+			SET p.nick_name=#{map.nick_name}
+			WHERE b.id = p.user_id and b.id=#{map.id}
+		]]>
+	</update>
+	<!-- 修改邮箱 -->
+	<update id="updateEmail" >
+		<![CDATA[
+			UPDATE auth.user_base b 
+			SET b.email=#{map.email}
+			WHERE b.id=#{map.id}
+		]]>
+	</update>
+	<update id="updateUserPhoto">
+		<![CDATA[
+			UPDATE auth.user_base_pertain SET user_image=#{photo} ,last_date=now() WHERE user_id=#{userId}
+		]]>
+	</update>	
+	
+	<select id="getUserVerify" resultType="com.kuke.auth.regist.domain.UserBaseVarify">
+			<![CDATA[
+			SELECT *
+			FROM auth.user_base_verify v  
+			WHERE v.user_id = #{user.id}
+   			]]>
+	</select>
+	
+	<update id="cancelVerify">
+		<![CDATA[
+			update auth.user_base_verify set user_status=2 WHERE user_id=#{params.user_id}
+		]]>
+	</update>	
+	
+	<select id="getUserFriends" resultType="String">
+			<![CDATA[
+			SELECT
+				p.nick_name
+			FROM
+				user_base_pertain p
+			WHERE
+				p.user_id IN(
+					SELECT
+						f.source_id AS friend_id
+					FROM
+						component.user_friends f
+					WHERE
+						f.user_id = #{user.id}
+					UNION 
+					SELECT
+						f.user_id AS friend_id
+					FROM
+						component.user_friends f
+					WHERE
+						f.source_id = #{user.id}
+				)
+   			]]>
+	</select>
+	
+	<select id="getUserMessage" resultType="com.kuke.auth.userCenter.bean.UserMessage">
+		SELECT
+			m.*,
+			b.nick_name,
+			b.user_image
+		FROM
+			component.user_messages m,auth.user_base_pertain b
+		WHERE
+			m.type = 0
+		and m.send_user_id=b.user_id
+		AND m.receive_user_id = #{params.user_id}
+		ORDER BY
+			m.send_date DESC
+		<include refid="mysqlPage"/>
+	</select>
+	
+	<select id="getSnsUserByOldName" resultType="com.kuke.auth.regist.domain.User">
+		<![CDATA[
+			SELECT id,password, org_id, name, email,extra_email, type, reg_date, end_date, isactive,user_image AS image,p.nick_name,
+			real_name,province,city,sex,birthday,constellation,one_of12animals,blood_type,phone,QQ,MSN,about_me,p.points
+			FROM auth.user_base b  INNER JOIN auth.user_base_pertain p ON b.id = p.user_id 
+			WHERE b.name = #{name}
+   		]]>
+	</select>
+	<update id="addUserEmailPass" >
+		<![CDATA[
+			update auth.user_base set email=#{email} , password=#{password} where id=#{id};
+		]]>
+	</update>	
+
+	<update id="updateUserNickName" >
+		<![CDATA[
+			UPDATE auth.user_base_pertain SET nick_name=#{nickName} WHERE user_id=#{id}
+		]]>
+	</update>
+	
+	<insert id="addFollowUser" parameterType="java.util.List">
+     		insert into component.user_friends(user_id,source_id,last_date) values
+			<foreach collection="list" item="item" index="index" 
+            separator=",">
+	            (#{user_id}, #{item.source_id},now())
+    		</foreach>
+  	</insert>
+  	
+  	<insert id="insertUserPertain" parameterType="com.kuke.auth.regist.domain.UserPertain">
+		<![CDATA[
+			INSERT INTO auth.user_base_pertain (user_id, nick_name, user_image, last_date) 
+			VALUES (#{userId}, #{nickName}, #{userImg}, now())
+		]]>
+	</insert>
+	
+	<insert id="insertUserMessage" parameterType="com.kuke.auth.userCenter.bean.UserMessage">
+		<![CDATA[
+			 INSERT INTO component.user_messages(title,contents,send_user_id,receive_user_id,send_date,flag,type) 
+			 VALUES (#{title},#{contents},#{send_user_id},#{receive_user_id},NOW(),#{flag},#{type})
+		]]>
+	</insert>
+	
+	<update id="updateUserMessage" >
+		<![CDATA[
+			UPDATE component.user_messages SET flag=#{flag} WHERE id=#{id}
+		]]>
+	</update>
+	
+	<update id="updateUserTip" >
+		<![CDATA[
+			UPDATE auth.user_base SET isPop='1' WHERE id=#{user_id}
+		]]>
+	</update>
+	
+	
+</mapper>

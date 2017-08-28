@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.play.mapper.PlayMapper">
+	<sql id="mysqlPage">
+		<if test="rows != 0">
+			LIMIT #{offset},#{rows}
+		</if>
+	</sql>
+	
+	<select id="getBothAudioDate" resultType="java.util.HashMap">
+			select audio_date,video_date,live_date from auth.user_authorize where user_id = #{uid}
+	</select>
+	<select id="getOrgDate" resultType="Map">
+		select channel_id,end_date from auth.org_channel where org_id = #{orgId}
+	</select>
+	<select id="getMusicBookById" resultType="java.util.HashMap">
+		<![CDATA[
+			select id,ctitle,etitle,music_book_file from cms.music_book where id=#{id}
+		]]>
+	</select>	
+	
+</mapper>

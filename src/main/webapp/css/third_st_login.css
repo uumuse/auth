@@ -1,0 +1,33 @@
+body{ background-color:#f1f1f1;}
+.tsite-top{ padding:20px 0 24px 0; background-color:#26282a;}
+.tsite-logo{ padding-left:26px;}
+.twd01{ width:1214px; margin:0 auto;}
+.tMain{ padding-top:20px;}
+.tMain-top{ height:10px; overflow:hidden; background:url(/images/third/tMain-top.png) no-repeat;}
+.tMain-con{ padding:0 7px; background:url(/images/third/tMain-con.png) repeat-y;}
+.tcon{ height:450px; background-color:#ffffff;}
+.tLeft{ width:374px; float:left; margin:0 -374px 0 90px; padding-top:30px;}
+.tLeft h2{ font-size:22px;}
+.tLeft h2 span{ display:inline-block; margin-left:16px; font-size:16px; color:#c5c5c5;}
+.tform{ padding-top:52px;}
+.tform td{ padding-top:22px;}
+.tform .c1{ font-size:14px; color:#2d2d2d;}
+.tform .c1 em{ display:inline-block; margin-left:14px;}
+.tform .c2{ width:294px; height:45px; padding-left:16px; line-height:45px\9; font-size:14px; color:#2d2d2d; font-family:Microsoft Yahei; background:url(/images/third/c2.png) no-repeat;}
+.tform .c4{ background-image:url(/images/third/c2-on.png);}
+.tform .c3{ width:310px; height:45px; text-align:center; line-height:45px; font-size:16px; color:#ffffff; font-family:Microsoft Yahei; cursor:pointer; background:url(/images/third/c3.png) no-repeat;}
+.tform .c3:hover{ background-image:url(/images/third/c3-on.png);}
+.tRight{ margin-left:600px; height:450px; overflow:hidden; background:url(/images/third/rpic.jpg) no-repeat;}
+.tMain-bottom{ height:20px; background:url(/images/third/tMain-bottom.png) no-repeat;}
+.tfooter{ padding:5px 0; text-align:center; font-size:14px; color:#ababab;}
+.tfooter span{ display:inline-block; margin-left:36px;}
+
+.popBg{ width:100%; height:100%; background-color:#000000; opacity:0.6; filter:alpha(opacity=60); position:fixed; left:0; top:0;}
+.popUp{ width:452px; height:266px; border:1px solid #e5e5e5; background-color:#ffffff; position:fixed; left:50%; top:50%; margin:-133px 0 0 -226px;}
+.popUp-top{ height:30px;}
+.popUp-top span{ display:block; width:11px; height:11px; background:url(/images/third/sprite-close.png) no-repeat; cursor:pointer; position:absolute; right:18px; bottom:0;}
+.popUp-top span:hover{ background-position:-11px 0;}
+.popUp-con{ padding-top:64px; text-align:center;}
+.popUp-tit{ font-size:16px; color:#26282a; padding-bottom:38px;}
+.popUp-btn{ display:block; width:106px; height:38px; line-height:38px; text-align:center; font-size:14px; color:#ffffff; margin:0 auto; cursor:pointer; background-color:#e05252;}
+.popUp-btn:hover{ background-color:#f66e6e;}

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.snslogin.mapper.SNSMapper">
+
+<!--解除新浪微博登录绑定-->
+<delete id="delUserSNS_SINA">
+    <![CDATA[
+    	DELETE FROM auth.user_base_sns_sina WHERE user_id = #{userID}
+    ]]>
+</delete>
+<!--解除QQ登录绑定-->
+<delete id="delUserSNS_QQ">
+    <![CDATA[
+    	DELETE FROM auth.user_base_sns_qq WHERE user_id = #{userID}
+    ]]>
+</delete>
+<!--解除微信登录绑定-->
+<delete id="delUserSNS_WeChat">
+    <![CDATA[
+    	DELETE FROM auth.user_base_sns_wechat WHERE user_id = #{userID}
+    ]]>
+</delete>
+<!--第三方绑定集合-->
+<select id="snsBoundMap" resultType="Map">
+    <![CDATA[
+		SELECT 
+			IF(s.end_time>now(),COUNT(s.sns_id),0) AS sina,s.sns_id AS sins_sns_id,s.access_token AS sina_access_token,date_format(s.end_time,'%Y-%m-%d %H:%H:%S') AS sina_end_time,
+      		IF(r.end_time>now(),COUNT(r.sns_id),0) AS renren,r.sns_id AS ren_sns_id,r.access_token AS ren_access_token,date_format(r.end_time,'%Y-%m-%d %H:%H:%S') AS ren_end_time,
+			IF(q.end_time>now(),COUNT(q.sns_id),0) AS qq,q.sns_id AS qq_sns_id,q.access_token AS qq_access_token,date_format(q.end_time,'%Y-%m-%d %H:%H:%S') AS qq_end_time
+		FROM auth.user_base t 
+		LEFT JOIN auth.user_base_sns_sina s ON t.id = s.user_id
+		LEFT JOIN auth.user_base_sns_renren r ON t.id = r.user_id
+		LEFT JOIN auth.user_base_sns_qq q ON t.id = q.user_id
+		WHERE t.id = #{userID}
+	]]>
+</select>
+<!--验证新浪微博登录绑定-->
+<select id="checkUserSNS_SINA" resultType="String">
+    <![CDATA[
+		SELECT user_id FROM auth.user_base_sns_sina WHERE 1 = 1 AND sns_id = #{snsID}
+	]]>
+</select>
+<!--验证用户手机绑定-->
+<select id="checkUserSNS_Phone" resultType="String">
+    <![CDATA[
+		SELECT phone FROM auth.user_base WHERE 1 = 1 AND id = #{uid}
+	]]>
+</select>
+<!--绑定手机-->
+<update id="boundUserSNS_Phone">
+	<![CDATA[
+		update auth.user_base set Phone = #{phone} where id = #{uid}
+	]]>
+</update>
+<!--解除手机绑定-->
+<update id="updateUserSNS_phone">
+    <![CDATA[
+    	update auth.user_base set Phone = '' where id = #{uid}
+    ]]>
+</update>
+<!--解除邮箱绑定-->
+<update id="updateUserSNS_email">
+    <![CDATA[
+    	update auth.user_base set email = '' where id = #{uid}
+    ]]>
+</update>
+<!--绑定新浪微博帐号-->
+<insert id="boundUserSNS_SINA" parameterType="com.kuke.auth.snslogin.bean.SnsUser">
+	<![CDATA[
+		INSERT INTO auth.user_base_sns_sina
+			(id,user_id,sns_id,sns_name,access_token,refresh_token,end_time,last_update)
+		VALUES
+			(#{id},#{user_id},#{sns_id},#{sns_name},#{access_token},#{refresh_token},#{end_time},NOW())
+	]]>
+</insert>
+<!--更新新浪微博帐号AccessToken-->
+<update id="updateUserSNS_SINA_AccessToken" parameterType="com.kuke.auth.snslogin.bean.SnsUser">
+	<![CDATA[
+		UPDATE auth.user_base_sns_sina
+		SET access_token=#{access_token},refresh_token=#{refresh_token},end_time=#{end_time},last_update=NOW(),sns_name=#{sns_name}
+		WHERE user_id=#{user_id}
+	]]>
+</update>
+<!--验证QQ登录绑定-->
+<select id="checkUserSNS_QQ" resultType="String">
+    <![CDATA[
+		SELECT user_id FROM auth.user_base_sns_qq WHERE 1 = 1 AND sns_id = #{snsID}
+	]]>
+</select>
+<!--绑定QQ帐号-->
+<insert id="boundUserSNS_QQ" parameterType="com.kuke.auth.snslogin.bean.SnsUser">
+	<![CDATA[
+		INSERT INTO auth.user_base_sns_qq
+			(id,user_id,sns_id,sns_name,access_token,refresh_token,end_time,last_update)
+		VALUES
+			(#{id},#{user_id},#{sns_id},#{sns_name},#{access_token},#{refresh_token},#{end_time},NOW())
+	]]>
+</insert>
+<!--更新QQ帐号AccessToken-->
+<update id="updateUserSNS_QQ_AccessToken" parameterType="com.kuke.auth.snslogin.bean.SnsUser">
+	<![CDATA[
+		UPDATE auth.user_base_sns_qq 
+		SET access_token=#{access_token},refresh_token=#{refresh_token},end_time=#{end_time},last_update=NOW(),sns_name=#{sns_name}
+		WHERE user_id=#{user_id}
+	]]>
+</update>
+<!--验证WX登录绑定-->
+<select id="checkUserSNS_WX" resultType="String">
+    <![CDATA[
+		SELECT user_id FROM auth.user_base_sns_wechat WHERE 1 = 1 AND sns_id = #{snsID}
+	]]>
+</select>
+<!--验证WX unionid登录绑定-->
+<select id="checkUnionIdUserSNS_WX" resultType="Map">
+    <![CDATA[
+		SELECT user_id FROM auth.user_base_sns_wechat WHERE 1 = 1 AND unionid = #{unionid}
+	]]>
+</select>
+<!--绑定WX帐号-->
+<insert id="boundUserSNS_WX" parameterType="com.kuke.auth.snslogin.bean.SnsUser">
+	<![CDATA[
+		INSERT INTO auth.user_base_sns_wechat
+			(id,user_id,sns_id,unionid,sns_name,access_token,refresh_token,end_time,last_update)
+		VALUES
+			(#{id},#{user_id},#{sns_id},#{unionid},#{sns_name},#{access_token},#{refresh_token},#{end_time},NOW())
+	]]>
+</insert>
+<!--更新WX帐号AccessToken-->
+<update id="updateUserSNS_WX_AccessToken" parameterType="com.kuke.auth.snslogin.bean.SnsUser">
+	<![CDATA[
+		UPDATE auth.user_base_sns_wechat 
+		SET access_token=#{access_token},refresh_token=#{refresh_token},end_time=#{end_time},last_update=NOW(),
+		sns_name=#{sns_name},unionid = #{unionid} 
+		WHERE user_id=#{user_id}
+	]]>
+</update>
+
+<!-- 得到第三方qq信息 -->
+<select id="getQQInfo" resultType="java.util.Map">
+    <![CDATA[
+		SELECT * FROM auth.user_base_sns_qq WHERE user_id = #{userId} order by last_update desc limit 1 
+	]]>
+</select>
+<!-- 得到第三方微博信息 -->
+<select id="getSinaInfo" resultType="java.util.Map">
+    <![CDATA[
+		SELECT * FROM auth.user_base_sns_sina WHERE user_id = #{userId} order by last_update desc limit 1
+	]]>
+</select>
+<!-- 得到第三方微信信息 -->
+<select id="getWeChatInfo" resultType="java.util.Map">
+    <![CDATA[
+		SELECT * FROM auth.user_base_sns_wechat WHERE user_id = #{userId} order by last_update desc limit 1
+	]]>
+</select>
+
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.pay.mapper.PayBillRefundMapper">
+
+	<!-- 根据ID得到支付项目名称及价格 -->
+	<select id="getRefundBillInfoByID" resultType="com.kuke.pay.bean.PayBillRefund" >
+		SELECT refund_keyword,r.keyword,pay_detail_id,r.total_price,refund_price,r.user_id,reason,refund_date,result,trade_no
+		FROM payment.pay_bill_refund r 
+		where refund_keyword = #{refund_keyword} 
+	</select>
+	<!-- 根据退款订单号，更新退款订单结果信息 -->
+	<update id="updateRefundBillInfoByID">
+		update payment.pay_bill_refund set result = #{result} where refund_keyword = #{refund_keyword} 
+	</update>
+	<!-- 新建退款订单信息 -->
+	<insert id="insertRefundBill">
+		insert into payment.pay_bill_refund() values(refund_keyword,keyword,pay_detail_id,total_price,refund_price,user_id,reason,refund_date,result,trade_no)
+		values(#{refund_keyword},#{keyword},#{pay_detail_id},#{total_price},#{refund_price},#{user_id},#{reason},#{refund_date},#{result},#{trade_no})
+	</insert>
+	
+	<select id="getAllKeyWord" resultType="String" >
+		select distinct pay_bill_keyword from payment.pay_bill_item
+	</select>
+	
+	<select id="getTheKeyWord" resultType="com.kuke.pay.bean.PayBill" >
+	    select pb.pay_bill_keyword keyword,pb.pay_pro_price_id,pb.pay_status,
+		pb.cost_price,
+		pb.user_id,pb.item_id,pb.pay_num,pb.item_name,pb.item_image,
+		pb.item_url,p.invoice_flag,p.bill_type,'1',p.last_date,p.confirm_date,p.cancel_date 
+		from payment.pay_bill_item pb,payment.pay_bill p
+		where  keyword=pay_bill_keyword and pay_bill_keyword in(select pay_bill_keyword
+		from  payment.pay_bill_item 
+		group by pay_bill_keyword 
+		having count(pay_bill_keyword) =#{count}) 
+		</select>
+		
+		<!-- 新建退款订单信息 -->
+	<insert id="insertPayBill">
+		insert into payment.paybillcopy  
+		(keyword,pay_pro_price_id,pay_status,
+		total_price,cost_price,
+		user_id,item_id,pay_num,item_name,item_image,
+		item_url,invoice_flag,bill_type,trade_no,isshow,create_date,confirm_date,cancel_date,
+		last_date) values
+		 <foreach item="item" collection="payBill" separator=",">  
+	        (#{item.keyword},#{item.pay_pro_price_id},#{item.pay_status},
+			#{item.total_price},#{item.cost_price},
+			#{item.user_id},#{item.item_id},#{item.pay_num},#{item.item_name},#{item.item_image},
+			#{item.item_url},#{item.invoice_flag},#{item.bill_type},#{item.trade_no},1,#{item.create_date},#{item.confirm_date},#{item.cancel_date},
+			#{item.last_date})
+	     </foreach> 
+	</insert>
+	
+</mapper>

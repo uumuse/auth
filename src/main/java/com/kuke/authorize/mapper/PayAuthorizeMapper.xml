@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kuke.authorize.mapper.PayAuthorizeMapper">
+<!--查询个人金额-->
+<select id="selectMoney" resultType="int">
+	<![CDATA[
+			SELECT COUNT(1)  FROM auth.user_money WHERE user_id=#{user_id} 
+	]]>
+</select>
+<!--个人添加金额-->
+<insert id="insertMoney">
+	<![CDATA[
+			INSERT INTO auth.user_money (id,user_id,remain_money,last_update) VALUES(#{id},#{user_id},#{money},NOW())
+	]]>	
+</insert>
+<!--个人修改充值-->
+<update id="updateMoney">
+	<![CDATA[
+			UPDATE auth.user_money SET last_update = NOW(),remain_money=remain_money+#{money}
+			WHERE user_id=#{user_id} 
+	]]>
+</update>
+
+<!--查询个人权限-->
+<select id="selectAuthorize" resultType="int">
+	<![CDATA[
+			SELECT COUNT(1)  FROM auth.user_authorize WHERE user_id=#{user_id} 
+	]]>
+</select>
+<!--个人添加音频包月 视频包月 Live包月-->
+<insert id="insertAuthorizeDate">
+	<if test="buyType==1">
+		INSERT INTO auth.user_authorize (id,user_id,audio_date,last_date) VALUES(#{id},#{user_id},DATE_ADD(CURDATE(),INTERVAL #{buyNum} MONTH),NOW())	
+	</if>
+	<if test="buyType==3">
+		INSERT INTO auth.user_authorize (id,user_id,audio_date,last_date) VALUES(#{id},#{user_id},DATE_ADD(CURDATE(),INTERVAL #{buyNum} MONTH),NOW())
+	</if>
+	<if test="buyType==4">
+		INSERT INTO auth.user_authorize (id,user_id,live_date,last_date) VALUES(#{id},#{user_id},DATE_ADD(CURDATE(),INTERVAL #{buyNum} MONTH),NOW())
+	</if>
+</insert>
+<!--个人修改音频包月 视频包月 Live包月-->
+<update id="updateAuthorizeDate">
+	<![CDATA[
+			UPDATE auth.user_authorize SET last_date = NOW()
+	]]>		
+	<if test="buyType==1">
+		,audio_date=IF(audio_date>CURDATE(),DATE_ADD(audio_date,INTERVAL #{buyNum} MONTH),DATE_ADD(CURDATE(),INTERVAL #{buyNum} MONTH))
+	</if>
+	<if test="buyType==3">
+		,video_date=IF(video_date>CURDATE(),DATE_ADD(video_date,INTERVAL #{buyNum} MONTH),DATE_ADD(CURDATE(),INTERVAL #{buyNum} MONTH))
+	</if>
+	<if test="buyType==4">
+		,live_date=IF(live_date>CURDATE(),DATE_ADD(live_date,INTERVAL #{buyNum} MONTH),DATE_ADD(CURDATE(),INTERVAL #{buyNum} MONTH))
+	</if>
+	<![CDATA[
+			WHERE user_id=#{user_id} 
+	]]>
+</update>
+
+<!--个人添加视频单次 Live点播-->
+<insert id="updateVideo">
+	<![CDATA[
+			INSERT INTO auth.user_video (id,user_id,video_id,end_date,last_date) 
+			VALUES(#{id},#{user_id},#{video_id},DATE_ADD(NOW(),INTERVAL 3 DAY),NOW())
+	]]>	
+</insert>
+<!--个人添加 Live直播-->
+<insert id="updateLive">
+	<![CDATA[
+			INSERT INTO auth.user_live (id,user_id,live_id,end_date,last_date) 
+			VALUES(#{id},#{user_id},#{live_id},
+			(SELECT DATE_FORMAT(item_date,'%Y-%m-%d') FROM live.live_item WHERE item_id=#{live_id}),NOW())
+	]]>	
+</insert>
+<!--个人添加下载 专辑下载 单曲下载 乐谱下载-->
+<insert id="updateDown">
+	<![CDATA[
+			INSERT INTO auth.user_download (id,user_id,download_id,download_type,end_date,last_update) 
+			VALUES(#{id},#{user_id},#{down_id},#{down_type},
+			DATE_ADD(NOW(),INTERVAL 2 DAY),NOW())
+	]]>	
+</insert>
+
+
+<!--个人Live分账-->
+<insert id="shareLive">
+	<![CDATA[
+			INSERT INTO live.share_live_user (id,source_id,source_type,source_year,source_month,user_id,cost_price,isreturn,lastupdate) 
+			VALUES(#{id},
+	]]>		
+	<if test="live_id!=''">
+			#{live_id},0,
+			(SELECT DATE_FORMAT(item_date,'%Y') FROM live.live_item WHERE item_id = #{live_id}),
+			(SELECT DATE_FORMAT(item_date,'%m') FROM live.live_item WHERE item_id= #{live_id}),
+	</if>	
+	<if test="live_id==''">
+			'',1,
+			DATE_FORMAT(#{buyDate},'%Y'),
+			DATE_FORMAT(#{buyDate},'%m'),
+	</if>		
+	<![CDATA[	
+			#{user_id},#{price},0,NOW())
+	]]>	
+</insert>
+
+
+
+
+
+
+
+
+</mapper>

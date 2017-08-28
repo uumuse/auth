@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.downloadAuth.mapper.DownloadAuthMapper">
+	
+	<select id="getDownloadItemDesc" resultType="Map">
+		<if test="pay_pro_price_id=='509'" >
+        <![CDATA[
+        	select b.id,b.ctitle as ctitle,b.etitle as etitle,b.music_book_file,
+        	p.pro_price*b.page as pro_price,p.id pro_price_id 
+        	from music.music_book b,payment.pay_pro_price p 
+        	where p.id=509 and b.id=#{item_id}
+	     ]]>
+	    </if>
+	    <if test="pay_pro_price_id=='510'" >
+        <![CDATA[
+        	select c.item_code id,ifnull(c.ctitle,'') as ctitle, ifnull(c.dtitle,'') as etitle,
+        	c.labelid,p.pro_price,c.no_cd,p.id pro_price_id from 
+        	cms.cataloguebio c,payment.pay_pro_price p 
+        	where p.id=510 AND c.item_code=#{item_id}
+	     ]]>
+	    </if>
+	    
+	    <if test="pay_pro_price_id=='511'" >
+        <![CDATA[
+        	SELECT t.l_code id,ifnull(t.ctitle,'') as ctitle,ifnull(t.dtitle,'') as etitle,
+        	p.pro_price,p.id pro_price_id,t.item_code,c.labelid from cms.track t ,
+        	payment.pay_pro_price p,cms.cataloguebio c where c.item_code=t.item_code and 
+        	p.id=511 AND t.l_code=#{item_id}
+	     ]]>
+	    </if>
+	    
+	     <if test="pay_pro_price_id=='512'" >
+        <![CDATA[
+        	select c.item_code id,ifnull(c.ctitle,'') as ctitle, ifnull(c.title,'') as etitle,
+        	c.labelid,p.pro_price,c.no_cd,p.id pro_price_id from cms.cataloguebio c,
+        	payment.pay_pro_price p where p.id=512 AND c.item_code=#{item_id}
+	     ]]>
+	    </if>
+	    
+	    <if test="pay_pro_price_id=='513'" >
+        <![CDATA[
+        SELECT t.l_code id,ifnull(t.ctitle,'') as ctitle,ifnull(t.dtitle,'') as etitle,p.pro_price,p.id pro_price_id,t.item_code,
+			c.labelid from cms.track t ,payment.pay_pro_price p,cms.cataloguebio c 
+			where c.item_code=t.item_code and p.id=513 AND t.l_code=#{item_id}
+	     ]]>
+	    </if>
+	</select> 
+	
+	<select id="getCategoryListById" resultType="String">
+		select id as CATEGORYID from music.music_class where parent_id = 'B51677E0F84411E3B123DD45D36EB988' 
+	</select>
+	
+	<select id="getCategoryByItemcodeId" resultType="String">
+		 select distinct music_class_id as categoryid from music.musicclass_cataloguebio where item_code in ( select item_code from cms.cataloguebio where item_code = #{itemcode} and labelid in ('NBC','KAB') )
+ 	</select>
+ 	
+	<select id="getOrgDownMoney" resultType="com.kuke.auth.downloadAuth.bean.OrgDownMoney">
+		select * from auth.org_down_money where org_id=#{org_id}
+ 	</select>
+ 	
+	<select id="getDownUserByUP" resultType="com.kuke.auth.downloadAuth.bean.OrgDownUser">
+		select * from auth.org_down_user where user_name=#{u} and password=#{p} and org_id=#{org_id} and isused=1
+ 	</select>
+ 	
+ 	<update id="updateOrgDownUser" >
+		<![CDATA[
+			UPDATE auth.org_down_user SET money=money-#{money} WHERE id=#{id} and money>=#{money}
+		]]>
+	</update>
+	
+ 	
+ 	<select id="getDownIpById" resultType="com.kuke.auth.ssologin.bean.OrgDownIp">
+ 	<![CDATA[
+		SELECT 
+			id,org_id,start_ip,end_ip,money,last_date,isused
+		FROM org_down_ip 
+		WHERE isused=1 and inet_aton(end_ip) <=inet_aton(#{end_ip}) and inet_aton(start_ip) >=inet_aton(#{start_ip})
+ 	]]>
+ 	</select>
+ 	
+ 	<update id="updateOrgDownIp" >
+		<![CDATA[
+			UPDATE auth.org_down_ip SET money=money-#{money} WHERE id=#{id} and money>=#{money} and isused=1
+		]]>
+	</update>
+	
+	<insert id="recordOrgDownLog" parameterType="com.kuke.auth.downloadAuth.bean.OrgDownLog">
+		<![CDATA[
+			INSERT INTO log.org_download_log (org_id, type, price, down_id, account_name, ip,cname,ename,image,last_date,ip_acc_id,account_type) 
+				VALUES ( #{org_id},  #{type}, #{price},#{down_id}, #{account_name},#{ip},#{cname},#{ename},#{image},now(),#{ip_acc_id},#{account_type})
+		]]>
+	</insert>
+	
+</mapper>

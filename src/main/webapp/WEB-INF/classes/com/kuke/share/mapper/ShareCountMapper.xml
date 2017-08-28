@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.share.mapper.ShareCountMapper">
+<sql id="page">
+	LIMIT #{firstResult},#{pageSize}
+</sql>
+
+<insert id="insertShare">
+	insert into auth.user_sharecount(user_id,l_code,times,last_update) values(#{user_id},#{l_code},"1",NOW())
+</insert>
+
+<update id="updateShareCount">
+	update auth.user_sharecount set times = times+1 where user_id = #{user_id} and l_code = #{l_code}
+</update>
+
+<select id="getCurMonthShareCount" resultType="Map">
+	SELECT times FROM auth.user_sharecount where user_id=#{user_id} 
+		<if test="l_code != null and l_code != ''" >
+		 	and l_code = #{l_code} 
+		 </if>
+		and last_update &lt; NOW() and last_update &gt; DATE_FORMAT(#{date},'%Y-%m-%d HH:mm:ss')
+</select>
+
+</mapper>

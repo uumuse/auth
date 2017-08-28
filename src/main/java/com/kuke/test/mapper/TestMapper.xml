@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.test.mapper.TestMapper">
+
+	<insert id="insertUser">
+		insert into test_org.user_base(id,name,password,org_id,reg_date)
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.user_id},#{item.name},#{item.password},#{item.org_id},NOW())
+		</foreach>
+	</insert>
+	
+	<insert id="insertpertain">
+		insert into test_org.user_base_pertain(user_id,nick_name,last_date)
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.user_id},#{item.name},NOW())
+		</foreach>
+	</insert>
+	
+	<insert id="insertDownUser">
+		insert into test_org.org_down_assign(org_id,product_id,user_id,last_date)
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.org_id},'1',#{item.user_id},NOW())
+		</foreach>
+	</insert>
+	
+	<select id="getDownUser" resultType="Map">
+		SELECT * FROM auth.org_down_user 
+	</select>
+
+</mapper>

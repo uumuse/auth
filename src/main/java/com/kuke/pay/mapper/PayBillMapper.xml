@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.pay.mapper.PayBillMapper">
+
+
+	<!-- 根据lId,itemid得到订单 -->
+	<select id="getPayStatusByItemId" resultType="Map">
+		SELECT count(user_id) count from payment.paybill where pay_status=2 and user_id = #{uid} 
+			<choose> 
+				<when test="itemId != null and itemId != '' and lId != null and lId != ''"> 
+					and ( item_id=#{itemId} or item_id=#{lId} )
+				</when> 
+				<when test="itemId != null and itemId != ''"> 
+					   and item_id=#{itemId}
+				</when> 
+				<otherwise> 
+					   and  item_id=#{itemId}
+				</otherwise> 
+			</choose> 
+	</select>
+	<!-- 根据UID得到订单 -->
+	<select id="getUserBillByUserId" resultType="Map">
+		SELECT user_id,item_id from payment.paybill where pay_status=2 and user_id=#{uid}
+	</select>
+	
+	<select id="getUserBillCheck" resultType="Map">
+		SELECT user_id,item_id ,create_date from payment.paybill where pay_status=2 and user_id=#{user_id}
+			<choose> 
+				<when test="f == 1"> 
+						and ( item_id=#{item_id} or item_id=#{item_code} )
+				</when> 
+				<otherwise> 
+					   and item_id=#{item_code}
+				</otherwise> 
+			</choose> 
+	</select>
+	
+	<select id="getIosUserBillCheck" resultType="Map">
+		SELECT pay_status,user_id,item_id ,create_date from payment.paybill where user_id=#{user_id}
+			<choose> 
+				<when test="f == 1"> 
+						and ( item_id=#{item_id} or item_id=#{item_code} )
+				</when> 
+				<otherwise> 
+					   and item_id=#{item_code}
+				</otherwise> 
+			</choose> 
+			 and from_client = 'ios' 
+	</select>
+	<!-- 根据ID得到支付项目名称及价格 -->
+	<select id="getPayProPriceById" resultType="com.kuke.pay.bean.PayProPrice" >
+		SELECT c.name AS channel_name,p.* 
+		FROM payment.pay_pro_price p, payment.pay_channel c 
+		WHERE p.pay_channel_id = c.id AND p.id = #{id} 
+	</select>
+	
+	<!-- 建立订单 pay_bill_item 项-->
+	<insert id="insertPayBillItem" parameterType="com.kuke.pay.bean.PayBillItem">
+	<![CDATA[
+		INSERT INTO payment.pay_bill_item
+			(pay_bill_keyword,pay_pro_price_id,item_name,item_image,item_id,user_id,cost_price,pay_num,last_date,item_url,pay_status)
+		VALUES
+			(#{pay_bill_keyword},#{pay_pro_price_id},#{item_name},#{item_image},#{item_id},#{user_id},#{cost_price},#{pay_num},#{last_date},#{item_url},#{pay_status})
+	]]>
+	</insert>
+	
+	<!-- 建立订单 insertPayBill 项-->
+	<insert id="insertPayBill" parameterType="com.kuke.pay.bean.PayBill">
+	<![CDATA[
+		INSERT INTO payment.paybill
+			(keyword,pay_pro_price_id,pay_status,total_price,cost_price,discount_price,user_id,
+			item_id,pay_num,item_name,item_image,item_id_parent,item_url,from_client,create_date,last_date,invoice_flag,bill_type,trade_no)
+		VALUES
+			(#{keyword},#{pay_pro_price_id},#{pay_status},#{total_price},#{cost_price},#{discount_price},#{user_id},
+			#{item_id},#{pay_num},#{item_name},#{item_image},#{item_id_parent},#{item_url},#{from_client},NOW(),NOW(),#{invoice_flag},#{bill_type},#{trade_no})
+	]]>
+	</insert>
+	
+	<!-- 通过keyword得到PayBill详细信息 只有PayBill信息 -->
+	<select id="getPayBillPriceByKeyword" resultType="com.kuke.pay.bean.PayBill" >
+		SELECT * 
+		FROM payment.paybill b 
+		WHERE b.keyword = #{keyword}
+	</select>
+	
+	<!-- 根据用户名和订单号 查询订单  信息比较全的方法 -->
+	<select id="getPayBillByKeywordUid" resultType="com.kuke.pay.bean.PayBill" >
+		SELECT b.*,pp.pay_channel_id, pp.pro_price, pp.num AS pro_price_num , pc.type AS pay_channel_type  
+		FROM payment.paybill b , payment.pay_pro_price pp, payment.pay_channel pc
+		WHERE 
+			b.pay_pro_price_id = pp.id AND pc.id  = pp.pay_channel_id
+		and b.keyword = #{keyword}
+	</select>
+	
+	<!-- 通过keyword得到PayBillItems详细信息 -->
+	<select id="getPayBillItemsByKeyword" resultType="com.kuke.pay.bean.PayBillItem" >
+		SELECT 
+			p.*,pp.pay_channel_id, pp.pro_price, pp.num AS pro_price_num , pc.type AS pay_channel_type
+		FROM 
+			payment.pay_bill_item p, payment.pay_pro_price pp, payment.pay_channel pc
+		WHERE 
+			p.pay_pro_price_id = pp.id AND pc.id  = pp.pay_channel_id
+		AND 
+			p.pay_bill_keyword = #{keyword}
+	</select>
+	
+	<!-- 支付方式 paybillmsg -->
+	<select id="getPayBillMsgsByKeyword" resultType="Map" >
+		SELECT * FROM payment.pay_bill_msg WHERE pay_bill_keyword = #{keyword} AND pay_status = '1'
+	</select>
+	<!-- 支付方式的名称 -->
+	<select id="getPayBillMsgDesc" resultType="Map" >
+		SELECT d.des,b.cost_price
+		FROM payment.pay_bill_msg m,
+		payment.pay_bill_detail d,
+		payment.paybill b
+		WHERE b.keyword = #{keyword}
+		and b.keyword = m.pay_bill_keyword
+		and d.id = m.pay_detail_id
+	</select>
+	<!-- 查询用户moeny表 -->
+	<select id="getUserMoneyDB" resultType="Map">
+		SELECT * FROM auth.user_money WHERE user_id = #{uid}
+	</select>
+	<!-- remain_money得到账户余额 -->
+	<select id="getUserMoney" resultType="Map" >
+		SELECT CAST(remain_money  AS CHAR) as remain_money,CAST(org_money  AS CHAR) as org_money  FROM auth.user_money WHERE user_id = #{uid}
+	</select>
+	<!-- remain_money得到账户余额 -->
+	<select id="getOrgMoney" resultType="String" >
+		select money from auth.org_down_money where org_id = #{org_id}
+	</select>
+	<!-- 修改用户个人余额 -->
+	<update id="updateUserMoneyByUid" >
+	<![CDATA[
+		UPDATE auth.user_money 
+		SET remain_money = #{remain_money},last_update = NOW() 
+		WHERE user_id = #{uid}
+	]]>
+	</update>
+	<!-- 修改用户机构余额 -->
+	<update id="updateUserOrg_MoneyByUid" >
+	<![CDATA[
+		UPDATE auth.user_money 
+		SET org_money = #{org_money},last_update = NOW() 
+		WHERE user_id = #{uid}
+	]]>
+	</update>
+	<!-- 修改机构余额 -->
+	<update id="updateOrgMoney" >
+	<![CDATA[
+		UPDATE auth.org_down_money 
+		SET money = #{remain_money} 
+		WHERE  org_id = #{org_id}
+	]]>
+	</update>
+	<!-- 添加该用户数据 -->
+	<select id="insertUserMoney" >
+	<![CDATA[
+		INSERT INTO auth.user_money (user_id,remain_money,org_money,last_update) VALUES (#{map.user_id},#{map.remain_money},#{map.org_money},NOW())
+	]]>
+	</select>
+	<!--paybill 修改支付状态为2 已支付 -->
+	<update id="setBillStatusByKeyword">
+		UPDATE payment.paybill p SET p.pay_status = 2,p.confirm_date = NOW(),p.trade_no = #{trade_no} WHERE p.keyword = #{keyword} 
+	</update>
+	<!-- 修改支付状态为2 已支付 -->
+	<update id="setBilItemStatusBykeyword">
+		UPDATE payment.pay_bill_item p SET p.pay_status = 2 WHERE p.pay_bill_keyword = #{keyword}
+	</update>
+	<!-- 修改支付状态为2 已支付 -->
+	<update id="updateBillMsgStatusByKeyword">
+	<![CDATA[
+		UPDATE payment.pay_bill_msg SET pay_status = 2 , last_date = NOW() WHERE pay_bill_keyword = #{keyword} AND pay_status = 1
+	]]>
+	</update>
+	<!-- 添加result信息 -->
+	<insert id="insertPayBillNotifyResult" parameterType="com.kuke.pay.bean.PayBillNotifyResult" >
+		replace INTO payment.pay_bill_notify_result
+			(pay_bill_keyword,result,last_date)
+		VALUES
+			(#{pay_bill_keyword},#{result},NOW())
+	</insert>
+	<!-- 判断是否属于spoken -->
+	<select id="getCategoryListById" resultType="String">
+		SELECT id CATEGORYID FROM music.music_class WHERE id='B51677E0F84411E3B123DD45D36EB988';
+	</select>
+	<select id="getCategoryByItemcodeId" resultType="String">
+ 		select distinct music_class_id as categoryid from music.musicclass_cataloguebio where item_code 
+		in ( select item_code from cms.cataloguebio where item_code = #{itemcode} and labelid in ('NBC','KAB'))
+ 	</select>
+ 	<!-- 删除PayBillMsg -->
+ 	<delete id="delPayBillMsg">
+ 		DELETE FROM payment.pay_bill_msg WHERE pay_bill_keyword = #{keyword} AND pay_status = '1'
+ 	</delete>
+ 	<!-- 添加PayBillMsg记录 -->
+ 	<insert id="insertPayBillMsg" parameterType="com.kuke.pay.bean.PayBillMsg" >
+		INSERT INTO payment.pay_bill_msg
+			(pay_detail_id,pay_bill_keyword,pay_price,last_date,pay_status)
+		VALUES
+			(#{pay_detail_id},#{pay_bill_keyword},#{pay_price},NOW(),#{pay_status})
+	</insert>
+	
+ 	<select id="selectPayBillByTradeNo" resultType="com.kuke.pay.bean.PayBill" >
+		select * from  payment.paybill where trade_no = #{trade_no}
+	</select>
+	<!-- 根据pay_channel_id获取pay_pro_price信息 -->
+	<select id="getProPriceByChannelId" resultType="com.kuke.pay.bean.PayProPrice" >
+		SELECT * FROM payment.pay_pro_price p WHERE p.pay_channel_id = #{channelId}
+	</select>
+	<!-- 带CD数量的Price -->
+	<select id="getPayProPriceNoCD" resultType="Map" >
+		SELECT c.item_code item_code,c.no_cd 
+          from cms.cataloguebio c where c.item_code = #{item_code} 
+	</select>
+	<!-- 根据id查询乐谱 -->
+	<select id="getMusicBookObjById" resultType="Map" >
+		SELECT  CAST(page AS CHAR) AS page FROM cms.music_book b WHERE b.id = #{id}
+	</select>
+	<!-- 根据id查询spoken -->
+	<select id="getSpokenById" resultType="Map" >
+		SELECT c.*
+	    FROM
+	   		cms.cataloguebio c
+	   	WHERE
+	   		c.column_46 = 1 AND c.item_code = #{id}
+	</select>
+	
+	<!-- IP下载订单 -->
+	<insert id="buildOrgIPDownLog" parameterType="com.kuke.auth.downloadAuth.bean.OrgDownLog">
+		<![CDATA[
+			INSERT INTO log.org_download_log (org_id, type, price, pay_detail_id,down_id, account_name, ip,cname,ename,image,from_client,last_date,ip_acc_id,account_type,temp_down_id) 
+				VALUES (#{org_id},#{type},#{price,jdbcType=DOUBLE},#{pay_detail_id},#{down_id}, #{account_name},#{ip},#{cname},#{ename},#{image},#{from_client},now(),#{ip_acc_id},#{account_type},#{temp_down_id})
+		]]>
+	</insert>
+	
+	<!-- 根据临时ID得到订单 -->
+	<select id="getPayBillByTempId" resultType="Map">
+		SELECT ip,down_id,last_date from log.org_download_log where temp_down_id =#{temp_down_id} and hide is null and 1=1  
+			<choose> 
+				<when test="f == 1"> 
+					and ( down_id=#{item_id} or down_id=#{item_code} )
+				</when> 
+				<otherwise> 
+					   and  down_id=#{item_code}
+				</otherwise> 
+			</choose> 
+			order by last_date desc
+	</select>
+		<!-- 根据临时ID得到订单 -->
+	<select id="getUserBillByTempId" resultType="Map">
+		SELECT ip,down_id,last_date from payment.paybill where user_id =#{temp_down_id} and 1=1  
+			<choose> 
+				<when test="flag == 1"> 
+					and ( down_id=#{item_id} or down_id=#{item_code} )
+				</when> 
+				<when test="flag==2"> 
+					   and down_id=#{item_id}
+				</when> 
+				<otherwise> 
+					   and  down_id=#{item_id}
+				</otherwise> 
+			</choose> 
+	</select>
+	<update id="updateOrgBillStatusByTempId">
+		update log.org_download_log set hide = 1 where temp_down_id =#{temp_down_id} and down_id = #{itemid}
+	</update>
+	
+	<!-- 得到机构IP的总钱数 -->
+	<select id="getOrgIPMoney" resultType="com.kuke.auth.ssologin.bean.OrgDownIp" >
+		SELECT id,org_id,start_ip,end_ip,money,last_date,isused
+		FROM auth.org_down_ip 
+		WHERE isused = 1 
+			  and inet_aton(end_ip) &gt;= inet_aton(#{params.ip}) 
+			  and inet_aton(start_ip) &lt;= inet_aton(#{params.ip})
+	</select>
+	<!-- 得到机构开放下载钱数-->
+	<select id="getOrgMoneys" resultType="Map" >
+		SELECT assign_money money
+		FROM   auth.org_down_assign_money 
+		WHERE  org_id = #{params.orgid} and  product_id = #{params.productid}  
+		and all_flag = '1'
+	</select>
+	<!-- 得到机构账户分配余额 -->
+	<select id="getOrgUserMoney" resultType="Map" >
+		select assign_client_money money 
+		from  auth.org_down_assign_money m,auth.org_down_assign a 
+		where   m.org_id = #{params.orgid} and  m.product_id = #{params.productid} 
+		and m.all_flag = '2' and m.org_id = a.org_id 
+		and m.product_id = a.product_id and a.user_id = #{params.userid}
+	</select>
+	
+	
+	<!-- 更新机构IP余额 -->
+	<update id="updateOrgIPMoney">
+		update auth.org_down_ip set money = #{money},last_date=NOW() where id=#{id}
+	</update>
+	<!-- 更新机构开放余额 -->
+	<update id="updateOrgMoneys">
+		update auth.org_down_assign_money set assign_money = #{money},last_date=NOW() 
+		where  org_id = #{orgid} and  product_id = #{productid}
+	</update>
+	<!-- 更新机构用户分配余额 -->
+	<update id="updateOrgUserMoney">
+		update auth.org_down_assign_money set assign_client_money = #{money},last_date=NOW() 
+		where  org_id = #{orgid} and  product_id = #{productid}
+	</update>
+	
+</mapper>

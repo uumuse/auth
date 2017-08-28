@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.userCenter.mapper.UserCenterMapper">
+	
+	<sql id="mysqlPage">
+			<if test="rows != 0">
+				LIMIT #{offset},#{rows}
+			</if>
+	</sql>
+	
+	
+	<!-- 查询单曲 -->
+	<select id="getItemcodeByLcode" resultType="Map">
+	      select item_code,ctitle,title,track_desc from cms.track where l_code = #{l_code}
+	</select>
+	<!-- 查询专辑 -->
+	<select id="getItemcode" resultType="Map">
+	       select item_code,ctitle,title from cms.cataloguebio where item_code = #{item_code}
+	</select>
+	<!-- 查询乐谱 -->
+	<select id="getMusicBook" resultType="Map">
+	      select ctitle,etitle ,music_book_file from cms.music_book where id = #{id}
+	</select>
+	
+	
+	<select id="getOrgExpireTime" resultType="Map">
+	      select org_id,end_date,channel_id from auth.org_channel where org_id=#{orgId}
+	</select>
+	
+	<!-- 我的订单 -->
+	<select id="getBillInf" resultType="com.kuke.auth.userCenter.bean.UserBill">
+		select distinct * from (
+		SELECT bi.*,c.rar,case when c.showable = '0' THEN '0' when ifnull(c.showable,'') != '' THEN c.showable else '' end showable
+		from  (
+		select b.keyword,b.pay_pro_price_id,b.pay_status,
+		b.cost_price,b.user_id,b.item_id,b.item_name,
+		b.item_image,b.item_url,b.create_date,
+		b.confirm_date,b.cancel_date,b.bill_type,p.pay_channel_id,
+		c.name as pay_channel_name,c.type as pay_channel_type
+		FROM payment.paybill b,payment.pay_pro_price p,payment.pay_channel c
+		WHERE b.pay_pro_price_id = p.id
+		AND p.pay_channel_id = c.id
+		AND (b.pay_status = 0 or b.pay_status = 1 or b.pay_status = 2 or b.pay_status = 3 )
+		AND	b.user_id = #{params.userId}
+		AND b.isshow = '1' AND b.from_client != 'ios'
+		) as bi 
+		left join  cms.cataloguebio c on bi.item_id=c.item_code
+		left join cms.catlabel l on c.labelid = l.labelid
+		where bi.pay_pro_price_id != '511'
+		union 
+		SELECT bi.*,c.rar,case when c.showable = '0' THEN '0' when ifnull(c.showable,'') != '' THEN c.showable else '' end showable
+		from  (
+		select b.keyword,b.pay_pro_price_id,b.pay_status,
+		b.cost_price,b.user_id,b.item_id,b.item_name,
+		b.item_image,b.item_url,b.create_date,
+		b.confirm_date,b.cancel_date,b.bill_type,p.pay_channel_id,
+		c.name as pay_channel_name,c.type as pay_channel_type
+		FROM payment.paybill b,payment.pay_pro_price p,payment.pay_channel c
+		WHERE b.pay_pro_price_id = p.id
+		AND p.pay_channel_id = c.id
+		AND (b.pay_status = 0 or b.pay_status = 1 or b.pay_status = 2 or b.pay_status = 3 )
+		AND	b.user_id = #{params.userId}
+		AND b.isshow = '1' AND b.from_client != 'ios'
+		) as bi 
+		left join cms.track t on bi.item_id=t.l_code 
+ 		left join cms.cataloguebio c on t.item_code=c.item_code
+ 		left join cms.catlabel l on c.labelid = l.labelid
+ 		where bi.pay_pro_price_id = '511'
+ 		) a order by create_date desc
+		<include refid="mysqlPage"/>
+	</select> 
+	<!-- 我的订单:ios -->
+	<select id="getBillInfIOS" resultType="com.kuke.auth.userCenter.bean.UserBill">
+		select distinct * from (
+		SELECT bi.*,c.rar,case when c.showable = '0' THEN '0' when ifnull(c.showable,'') != '' THEN c.showable else '' end showable
+		from  (
+		select b.keyword,b.pay_pro_price_id,b.pay_status,
+		b.cost_price,b.user_id,b.item_id,b.item_name,
+		b.item_image,b.item_url,b.create_date,
+		b.confirm_date,b.cancel_date,b.bill_type,b.trade_no,p.pay_channel_id,
+		c.name as pay_channel_name,c.type as pay_channel_type
+		FROM payment.paybill b,payment.pay_pro_price p,payment.pay_channel c
+		WHERE b.pay_pro_price_id = p.id
+		AND p.pay_channel_id = c.id
+		AND (b.pay_status = 0 or b.pay_status = 1 or b.pay_status = 2 or b.pay_status = 3 or b.pay_status = 4)
+		AND	b.user_id = #{params.userId}
+		AND b.isshow = '1' AND b.from_client = 'ios' 
+		) as bi 
+		left join  cms.cataloguebio c on bi.item_id=c.item_code
+		left join cms.catlabel l on c.labelid = l.labelid
+		where bi.pay_pro_price_id != '511'
+		union 
+		SELECT bi.*,c.rar,case when c.showable = '0' THEN '0' when ifnull(c.showable,'') != '' THEN c.showable else '' end showable
+		from  (
+		select b.keyword,b.pay_pro_price_id,b.pay_status,
+		b.cost_price,b.user_id,b.item_id,b.item_name,
+		b.item_image,b.item_url,b.create_date,
+		b.confirm_date,b.cancel_date,b.bill_type,b.trade_no,p.pay_channel_id,
+		c.name as pay_channel_name,c.type as pay_channel_type
+		FROM payment.paybill b,payment.pay_pro_price p,payment.pay_channel c
+		WHERE b.pay_pro_price_id = p.id
+		AND p.pay_channel_id = c.id
+		AND (b.pay_status = 0 or b.pay_status = 1 or b.pay_status = 2 or b.pay_status = 3 or b.pay_status = 4)
+		AND	b.user_id = #{params.userId}
+		AND b.isshow = '1' AND b.from_client = 'ios' 
+		) as bi 
+		left join cms.track t on bi.item_id=t.l_code 
+ 		left join cms.cataloguebio c on t.item_code=c.item_code
+ 		left join cms.catlabel l on c.labelid = l.labelid
+ 		where bi.pay_pro_price_id = '511'
+ 		) a order by create_date desc
+		<include refid="mysqlPage"/>
+	</select>
+	
+	<update id="exchangeCoupon" >
+		<![CDATA[
+			UPDATE component.coupon_log SET ower_id_initial=#{uid},coupon_states=1 
+			WHERE coupon_key=#{couponKey} and coupon_states=0 and (ower_id_initial is null or ower_id_initial='')
+		]]>
+	</update>
+	
+	<select id="getUserCoupon" resultType="com.kuke.auth.userCenter.bean.Coupon">
+	
+		select l.id,c.image, c.name ,c.type,  c.end_date 
+       from component.coupon_log l,component.coupon c 
+       where c.id=l.coupon_id 
+       AND(
+			(
+				l.ower_id_initial = #{params.userId}
+			AND (l.ower_id_final IS NULL or l.ower_id_final='')
+			)
+		OR(
+			(l.ower_id_initial IS NOT NULL or l.ower_id_initial !='')
+		AND l.ower_id_final = #{params.userId}
+		))
+        <if test="params.kind=='notUsed'" >
+        <![CDATA[
+	     and l.coupon_states=1 and c.end_date>now()
+	     ]]>
+	    </if>
+      	<if test="params.kind=='used'" >
+      	<![CDATA[
+	     and l.coupon_states=2 
+	    ]]>
+	    </if>
+	    <if test="params.kind=='outDate'" >
+	    <![CDATA[
+	     and c.end_date < now() and l.coupon_states=1
+	    ]]>
+	    </if>
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<select id="getCouponDetail" resultType="com.kuke.auth.userCenter.bean.Coupon">
+		select l.id,c.image_big, c.name ,c.type,  c.end_date ,c.comment,l.coupon_states,l.coupon_key
+       from component.coupon_log l,component.coupon c 
+       where c.id=l.coupon_id and l.id=#{params.cl}  
+        
+	</select>
+	
+	
+	<update id="presentCoupon" >
+		<![CDATA[
+			UPDATE component.coupon_log l,component.coupon c SET ower_id_final=#{params.toUserId},give_desc=#{params.comment}
+			WHERE c.id=l.coupon_id and c.end_date>now() and l.id=#{params.clid} and l.coupon_states=1  
+		]]>
+	</update>
+	
+	<select id="getPointsExchangeRecord" resultType="com.kuke.auth.userCenter.bean.Points">
+	
+		select l.id,c.image, c.name ,c.type,  c.end_date 
+       from component.coupon_log l,component.coupon c 
+       where c.id=l.coupon_id and l.ower_id=#{params.userId} 
+        
+	    <include refid="mysqlPage"/>
+	</select>
+	<select id="getUserAuthorize" resultType="com.kuke.auth.userCenter.bean.UserAuthorize">
+		select a.audio_date,a.video_date,a.live_date
+			from auth.user_authorize a 
+			where a.user_id= #{params.userId} limit 1;
+	</select> 
+	<select id="getUserMoney" resultType="com.kuke.auth.userCenter.bean.UserAuthorize">
+		select remain_money  from auth.user_money where user_id=#{params.userId};
+	</select> 
+	
+	<!-- 取消订单 -->
+	<update id="cancleBill" >
+		<![CDATA[
+			UPDATE payment.paybill b SET b.pay_status=3
+			WHERE b.user_id=#{params.userId}
+			and b.keyword=#{params.keyWord}
+		]]>
+	</update>
+	
+	<!-- 取消订单 -->
+	<update id="invalidBill" >
+			UPDATE payment.paybill b SET b.pay_status=0
+			WHERE b.user_id = #{userid}
+			and b.keyword in 
+			<foreach item="item" collection="keywords" open="(" separator="," close=")">  
+	        	#{item}  
+	        </foreach> 
+	</update>
+	
+	<!-- 删除订单 -->
+	<!-- delete payment.pay_bill_msg where pay_bill_keyword = #{params.keyword}; -->
+	<!-- delete payment.pay_bill_notify_result where pay_bill_keyword = #{params.keyword}; -->
+	<!-- delete payment.pay_bill_notify_url where pay_bill_keyword = #{params.keyword}; -->
+	<delete id="deleteBill" >
+		<![CDATA[
+			update payment.paybill set isshow = '0'  where keyword = #{params.keyword} and user_id = #{params.userId};
+		]]>
+	</delete>
+	
+	<select id="getFavouriteTheme" resultType="String">
+			 select source_id   
+			 from component.favorites r  where user_id=#{params.userId} and r.type=4 order by r.last_date desc
+			 <include refid="mysqlPage"/>
+	</select>
+	
+	<delete id="delFavouriteTheme">
+		delete from component.favorites where user_id=#{params.userId} and type=4 and  source_id in 
+		<foreach collection="source_ids" item="item" close=")" open="(" separator=",">
+			#{item}
+		</foreach> 
+	</delete>
+	
+	
+	<select id="userEdit" resultType="map"> 
+		select *from music.catalogue_info_user where user_id=#{userid}
+		 <if test="state!=null and state!=2">
+		 	and state=#{state}
+		 </if>
+		 <if test="state==2">
+		 	and state in('2','3','4')
+		 </if>
+		 order by commit_time desc
+	</select>
+	
+	<select id="checkBoundPhone" resultType="int"> 
+		select count(*) from auth.user_base where phone = #{phoneNum}
+	</select>
+	
+	<select id="checkUserEmail" resultType="int"> 
+		select count(*) from auth.user_base where email = #{userEmail}
+	</select>
+	
+	<!-- ################## 我的喜欢开始 #####################-->
+	
+	<!-- 最近播放 -->
+	<select id="getRecentPlay" resultType="java.util.HashMap">
+		<![CDATA[
+			 
+   		]]>
+	</select>
+	
+	<!-- 我的喜欢：单曲     获取数量 -->
+	<select id="getFavoriteTrackCount" resultType="int">
+	     <![CDATA[
+	     	select count(c.item_code) 
+	     	from (SELECT f.user_id,f.source_id  FROM component.favorites f where f.user_id = #{userId}     
+				  and f.isshow = 1 and f.type = 2 ORDER BY last_date DESC )a 
+			inner join cms.track c on a.source_id=c.l_code
+			inner join cms.cataloguebio mc ON c.item_code = mc.item_code 
+			inner join cms.works wc on c.item_code = wc.item_code and wc.work_id = c.work_id
+				]]>
+	</select>
+	<!-- 我的喜欢：单曲 -->
+	<select id="getFavoriteTrack" resultType="java.util.HashMap">
+	     <![CDATA[
+	     	select c.item_code itemcode,c.l_code lcode,c.work_id workId,c.ctitle,c.title,c.track_desc trackDesc,
+			        	   c.timing,c.isrc,c.cd,c.track,c.duration,c.kbps64,c.kbps192,c.kbps320,c.wav,
+			        	   wc.title workTitle, wc.ctitle workCtitle,wc.work_desc workDesc,c.labelid,
+			        	   mc.ctitle mcctitle,mc.title mctitle,(mc.content_type+0) contentType,mc.showable 
+			from (SELECT f.user_id,f.source_id  FROM component.favorites f where f.user_id = #{params.userId}   
+				  and f.isshow = 1 and f.type = 2 ORDER BY last_date DESC ) a 
+			inner join cms.track c on a.source_id=c.l_code
+			inner join cms.cataloguebio mc ON c.item_code = mc.item_code 
+			inner join cms.works wc on c.item_code = wc.item_code and wc.work_id = c.work_id 
+				]]>
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 我的喜欢：视频 -->
+	<select id="getFavoriteVedioCount" resultType="int">
+		<![CDATA[
+			SELECT count(f.user_id) 
+			FROM component.favorites f, video.tblcatalogue v
+			WHERE f.user_id = #{userId} 
+			and f.isshow = 1 and type = 3 and f.source_id = v.catalogueid
+			ORDER BY f.last_date DESC
+	     ]]>
+	</select>	
+	
+	<!-- 我的喜欢：视频 -->
+	<select id="getFavoriteVedio" resultType="java.util.HashMap">
+		<![CDATA[
+			SELECT f.user_id,f.source_id,v.cataloguename,cataloguecname,duration,
+				   v.isshow
+			FROM component.favorites f, video.tblcatalogue v
+			WHERE f.user_id = #{params.userId} 
+			and f.isshow = 1 and type = 3 and f.source_id = v.catalogueid
+			ORDER BY f.last_date DESC
+	     ]]>
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 我的喜欢：专辑 获取数量-->
+	<select id="getFavoriteCatalCount" resultType="int">
+		<![CDATA[
+			 SELECT count(f.user_id)  
+			 FROM component.favorites f, cms.cataloguebio c
+			 WHERE f.user_id = #{userId} 
+			 and f.isshow = 1 and f.type = 1 and f.source_id = c.item_code
+			 ORDER BY f.last_date DESC
+	     ]]>
+	</select>	
+	<!-- 我的喜欢：专辑 -->
+	<select id="getFavoriteCatal" resultType="java.util.HashMap">
+		<![CDATA[
+			SELECT f.user_id,c.item_code itemcode,c.labelid,c.ctitle,c.title,c.release_date releaseDate,
+				   c.comment,(c.content_type+0) contentType,c.get_type getType,c.timing,
+				   c.duration,c.last_time lastTime,c.no_cd*10 price,c.showable  
+			from ( SELECT user_id,source_id ,last_date FROM component.favorites  WHERE user_id = #{params.userId}  and isshow = 1 and type = 1) f 
+			inner join cms.cataloguebio c
+			on f.source_id = c.item_code
+			ORDER BY f.last_date DESC
+	     ]]>
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 取消喜欢 -->
+	<delete id="cancleFavorite">
+			 delete from component.favorites where user_id = #{uid} and type=#{type} and source_id in
+			 <foreach item="source_id" collection="array" open="(" separator="," close=")">  
+	        	#{source_id}  
+	         </foreach> 
+	</delete>
+	
+	<!-- 增加喜欢 -->
+  	<insert id="addFavourite" >
+     		INSERT INTO component.favorites(source_id,user_id,type,isshow,last_date) 
+     		values
+     		 <foreach item="source_id" collection="id" separator=",">  
+	        	(#{source_id},#{user_id}, #{type},1, NOW())
+	         </foreach> 
+  	</insert>  
+  	
+  	<!-- 我喜欢的资源是否已被喜欢 -->
+  	<select id="getFavourite" resultType="String">
+  		select id from component.favorites where user_id=#{user_id} and source_id = #{id}
+  		<if test="type != null and type != ''">
+                       and type = #{type}
+                </if>
+                limit 1
+  	</select>  
+  	
+  	<!-- 用户喜欢的资源 -->
+  	<select id="getUserFavourite" resultType="String">
+  		select source_id from component.favorites where user_id=#{user_id}
+  		<if test="type != null and type != ''">
+                       and type = #{type}
+                </if>
+  	</select>  
+  	
+  	<!-- 我喜欢的数量 -->
+  	<select id="getCountFavourite" resultType="int">
+  		select count(1) from component.favorites where user_id=#{user_id}
+  	</select> 
+  	
+  	<!-- 我收藏的资源 -->
+  	<select id="getFavouriteRes" resultType="String">
+  		select source_id from component.favorites where user_id=#{user_id} and source_id in
+  		<foreach item="source_id" collection="source" open="(" separator="," close=")">  
+	        	#{source_id}  
+	    </foreach>
+  	</select>
+  	
+  	
+	<!-- ################## 我的喜欢结束 #####################-->
+	
+	<!-- ################## 我的夹子开始 #####################-->
+	
+	<!-- 我的夹子：单曲（所有） -->
+	<select id="getTrackFolderList" resultType="com.kuke.auth.userCenter.bean.UserFolder">
+			<![CDATA[
+				 select m.id,m.foldername,m.imgurl,m.create_date,
+				 group_concat(distinct SUBSTRING(source_id FROM (LOCATE('|',source_id)+1))) AS itemcode 
+				 from component.musicfolder m
+				 left join component.musicfolder_relation mr on m.id = mr.musicfolder_id
+				 where m.user_id = #{params.userId} and m.type = 1
+				 group by m.id
+				 order by m.create_date desc
+			 ]]>
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 我的夹子：唱片（所有） -->
+	<select id="getCatalFolderList" resultType="com.kuke.auth.userCenter.bean.UserFolder">
+			<![CDATA[
+			 select m.id,m.foldername,m.imgurl,m.create_date,
+			 group_concat(distinct mr.source_id) itemcode
+			 from component.musicfolder m
+			 left join component.musicfolder_relation mr on m.id = mr.musicfolder_id
+			 where m.user_id = #{params.userId} and m.type = 2
+			 group by m.id
+			 order by m.create_date desc
+			 ]]>
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<!--单个夹子中source_id-->
+	<select id="getSourceOfFolder" resultType="String">
+	    <![CDATA[
+			        select distinct source_id
+			        from component.musicfolder_relation r  
+			        where 
+				        r.user_id = #{params.userId} and 
+				        r.musicfolder_id = #{params.musicfolder_id} 
+				    order by r.create_date desc  
+		]]>
+	</select>
+	
+	<!-- 过滤查询已下架的专辑 -->
+	<select id="getNoOffSourceItem" resultType="String">
+		 select GROUP_CONCAT(item_code) 
+		 from cms.cataloguebio
+		 where showable != '0' and item_code in 
+		 <foreach collection="item_codes" item="item" close=")" open="(" separator=",">
+		 	#{item}
+		 </foreach>
+	</select>
+	
+	<!-- 过滤查询已下架的单曲 -->
+	<select id="getNoOffFolderLcode" resultType="String">
+		 select GROUP_CONCAT(l_code) 
+		 from cms.track t
+		 left join cms.cataloguebio c on c.item_code = t.item_code
+		 where c.showable != '0' and l_code in 
+		 <foreach collection="l_codes" item="item" close=")" open="(" separator=",">
+		 	#{item}
+		 </foreach>
+	</select>
+	
+	<!--单个夹子中source_id 还有夹子类型-->
+	<select id="getSourTypeOfFolder" resultType="Map">
+	    <![CDATA[
+			        select distinct source_id,m.type
+			        from component.musicfolder_relation r  ,
+			        	component.musicfolder m
+			        where m.Id = r.musicfolder_id and
+				        r.user_id = #{params.userId} and 
+				        r.musicfolder_id = #{params.musicfolder_id} 
+				    order by r.create_date desc  
+		]]>
+	</select>
+	
+	<!--单个夹子中单曲信息-->
+	<select id="getTracksOfFolder" resultType="com.kuke.auth.userCenter.bean.TracksOfFolder">
+	    <![CDATA[
+			        select distinct r.id,r.musicfolder_id,r.source_id,r.user_id,r.create_date,
+			        	   c.item_code itemcode,c.l_code lcode,c.work_id workId,c.ctitle,c.title,c.track_desc trackDesc,
+			        	   c.timing,c.isrc,c.cd,c.track,c.duration,c.kbps64,c.kbps192,c.kbps320,c.wav,
+			        	   wc.title workTitle, wc.ctitle workCtitle,wc.work_desc workDesc,c.labelid,
+			        	   mc.ctitle mcctitle,mc.title mctitle,mc.showable
+			        from component.musicfolder_relation r  
+			        	 inner join cms.track c on c.l_code = substring_index(r.source_id, '|', 1)
+			             inner join cms.cataloguebio mc on c.item_code = mc.item_code
+			             inner join cms.works wc on c.item_code = wc.item_code and wc.work_id = c.work_id
+			        where 
+				        r.user_id = #{params.userId} and 
+				        r.musicfolder_id = #{params.musicfolder_id} 
+				    order by r.create_date desc  
+		]]>
+		<include refid="mysqlPage"/>
+	</select>
+	
+	<!--单个夹子中的唱片信息-->
+	<select id="getCatalsOfFolder" resultType="com.kuke.auth.userCenter.bean.CatalsOfFolder">
+	    <![CDATA[
+				 select distinct r.id,r.musicfolder_id,r.user_id,r.source_id,r.create_date,
+				 		c.item_code itemcode,c.labelid,c.ctitle,c.title,c.release_date releaseDate,
+				 		c.comment,c.content_type contentType,c.get_type getType,c.timing,c.showable,
+				 		c.duration,c.last_time lastTime,c.no_cd*#{params.everyCD} price,
+				 		( select id from component.favorites where user_id = r.user_id and source_id = r.source_id limit 1 ) fid
+				 from component.musicfolder_relation r  
+				 inner join cms.cataloguebio c on c.item_code = r.source_id
+				 where  r.user_id = #{params.userId}  and r.musicfolder_id = #{params.musicfolder_id}  
+	        	 order by r.create_date desc  
+		]]>
+		<include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 得到用户所有的夹子 -->
+	<select id="queryMyFolders" resultType="com.kuke.auth.userCenter.bean.UserFolder">
+				 select id,type,foldername,imgurl,create_date,
+				 (select count(Id) from component.musicfolder_relation where musicfolder_id = m.id and user_id = #{params.userId} ) countres,
+				 (select source_id from component.musicfolder_relation where id = ( select max(Id) from component.musicfolder_relation where musicfolder_id = m.id and user_id = #{params.userId} )) source_id
+				 from component.musicfolder m
+				 where user_id = #{params.userId} 
+			 	<if test="params.type != null and params.type != ''">
+                       and type = #{params.type}
+                </if>
+                <if test="params.folderid != null and params.folderid != ''">
+                       and id = #{params.folderid}
+                </if>
+                <if test="params.folder_name != null and params.folder_name != ''">
+                       and foldername = #{params.folder_name}
+                </if>
+				 order by create_date desc
+	</select>
+	
+	<!-- 得到用户所有的夹子 -->
+	<select id="queryUserFolders" resultType="com.kuke.auth.userCenter.bean.UserFolder">
+				 select id,type,foldername,imgurl,create_date,
+				 (select count(Id) from component.musicfolder_relation where musicfolder_id = m.id and user_id = #{params.userId} ) countres,
+				 (select source_id from component.musicfolder_relation where id = ( select max(Id) from component.musicfolder_relation where musicfolder_id = m.id and user_id = #{params.userId} )) source_id
+				 from component.musicfolder m
+				 where user_id = #{params.userId} 
+			 	<if test="params.type != null and params.type != ''">
+                       and type = #{params.type}
+                </if>
+                <if test="params.folderid != null and params.folderid != ''">
+                       and id = #{params.folderid}
+                </if>
+                <if test="params.folder_name != null and params.folder_name != ''">
+                       and foldername = #{params.folder_name}
+                </if>
+				 order by create_date desc
+				 <include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 创建夹子 -->
+	<insert id="createFavoritesFolder"  useGeneratedKeys="true"  keyProperty="id" parameterType="com.kuke.auth.userCenter.bean.UserFolder">
+			 <![CDATA[
+			 	INSERT INTO component.musicfolder (type,foldername,imgurl,user_id,create_date) 
+			 	VALUES(#{type},#{foldername},'',#{user_id},NOW())
+			 ]]>
+	</insert>
+	
+	<!-- 修改夹子名称 -->
+	<insert id="editFavFolderName">
+			 <![CDATA[
+			 	update component.musicfolder set foldername = #{params.folder_name} 
+			 	where id = #{params.musicfolder_id}
+			 ]]>
+	</insert>
+	
+	<!-- 修改夹子封面 -->
+	<insert id="saveFavFolderImg">
+			 <![CDATA[
+			 	update component.musicfolder set imgurl = #{params.imgUrl} 
+			 	where id = #{params.musicfolder_id}
+			 ]]>
+	</insert>
+	
+	<!--夹子删除-->
+	<delete id="delFavoritesFolder">
+		 <![CDATA[
+		 	DELETE FROM
+		 		component.musicfolder
+		 	WHERE user_id = #{uid} AND id in 
+		 ]]>
+		  <foreach collection="musicfolder_ids" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		  </foreach>
+	</delete>
+	
+	<!--分类关系删除-->
+	<delete id="delFavoritesFolderRelation">
+		 <![CDATA[
+		 	DELETE FROM
+		 		component.musicfolder_relation
+		 	WHERE user_id = #{uid} AND musicfolder_id in 
+	
+		 ]]>
+		 	 <foreach collection="musicfolder_ids" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!--删除夹子中内容-->
+	<delete id="delFavoritesSourceOfFolder">
+		 <![CDATA[
+		 	DELETE FROM
+		 		component.musicfolder_relation
+		 	WHERE user_id = #{uid} AND musicfolder_id = #{musicfolder_id} and source_id in 
+	
+		 ]]>
+		 	 <foreach collection="source_ids" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!--添加到唱片夹-->
+	<insert id="addSourceToFolder">
+		<![CDATA[
+		 	insert into
+		 		component.musicfolder_relation(musicfolder_id,source_id,user_id,create_date) values
+		 ]]>
+		 <foreach collection="source_ids" item="item" index="index" separator=",">
+			(#{musicfolder_id},#{item},#{uid},NOW())
+		</foreach>
+	</insert>
+	
+	<!-- ################## 我的夹子结束 #####################-->
+	
+	<!-- ################## 我的订阅开始 #####################-->
+	
+	<!-- 我的订阅：厂牌 -->
+	<select id="getSubscribeLabel" resultType="java.util.HashMap">
+		<![CDATA[
+			 SELECT  
+				 r.rss_source_id as labelid,c.display_name as displayName,c.display_cname as displayCname,c.label_desc as labelDesc,c.get_type as getType,c.showable,
+				 r.rss_type  AS rssType 
+			 FROM 
+				component.rss r 
+				left join cms.catlabel c on r.rss_source_id = c.labelid
+			 WHERE 
+				r.rss_user_id = #{params.userId}  and r.rss_type in ('11','12')
+			 ORDER BY r.last_time DESC
+	     ]]>
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 我的订阅：71作曲家   72演奏家   73指挥家  74管弦乐团   75合奏乐团  76合唱乐团 77作词者 78 曲作家/编曲者 
+	20161213 艺术家统一存为71，真实musicianType请求其他接口返回-->
+	<select id="getSubscribeArtist" resultType="java.util.HashMap">
+			 SELECT  
+				 r.rss_source_id 
+			 FROM 
+				component.rss r 
+			 WHERE 
+				 r.rss_user_id = #{params.userId} 
+				 <choose>
+	                <when test="params.rss_type != null and params.rss_type != ''">
+	                        and r.rss_type = #{params.rss_type}
+	                </when>
+	                <otherwise>
+	                        and r.rss_type in ('71')
+	                 </otherwise>
+        		 </choose>
+			 ORDER BY r.last_time DESC
+	    <include refid="mysqlPage"/>
+	</select>
+	
+	<!-- 取消订阅:关键字 主键ID -->
+	<delete id="cancleSubscribe">
+			 delete from component.rss where rss_user_id = #{uid}
+			 <if test="type != null and type != ''">
+                       and rss_type=#{type}
+             </if>
+             and rss_source_id in 
+			 <foreach item="source_id" collection="array" open="(" separator="," close=")">  
+	        	 #{source_id}  
+	         </foreach>
+	</delete>
+	
+	<!-- 查询订阅是否含有某一资源 -->
+	<select id="getSubscribe" resultType="String">
+			 select rss_source_id from component.rss where rss_user_id = #{uid} and rss_type = #{type} and rss_source_id in 
+			 <foreach item="source_id" collection="array" open="(" separator="," close=")">  
+	        	#{source_id}  
+	         </foreach>
+	</select>
+	
+	<!-- 增加订阅:同一类型 -->
+	<insert id="addSubscribe">
+			 insert into component.rss(rss_user_id,rss_source_id,rss_type,last_time) values
+			<foreach collection="array" item="item" index="index" separator=",">
+	           	(#{uid},#{item},#{type},NOW())
+    		</foreach>
+	</insert>
+	
+	<!-- 查询某一资源是否被订阅 -->
+  	<select id="checkSubscribe" resultType="String">
+  		select id from component.rss where rss_user_id=#{user_id} and rss_source_id = #{source_id}
+  		 and rss_type=#{type}
+  	</select>
+	
+	<!-- ################## 我的订阅结束 #####################-->
+	
+	<!-- ################## 系统消息开始 #####################-->
+	
+	<!--系统消息（所有的）-->
+	<select id="getSysMessageList" resultType="com.kuke.auth.userCenter.bean.UserMessage">
+	    <![CDATA[
+				select id,title,contents,send_user_id,send_date,flag 
+				from component.user_messages 
+				where receive_user_id = #{params.userId}  and type = 0
+				order by send_date desc
+		]]>
+		<include refid="mysqlPage"/>
+	</select>
+	
+	<!--系统消息（未读的）-->
+	<select id="getNoReadSysMessage" resultType="int">
+	    <![CDATA[
+				select count(id) 
+				from component.user_messages 
+				where receive_user_id = #{uid}  and type = 0 and flag = 0
+				order by send_date desc
+		]]>
+	</select>
+	
+	<!--系统消息（单个的）-->
+	<select id="getSingleMessage" resultType="com.kuke.auth.userCenter.bean.UserMessage">
+	    <![CDATA[
+				select id,title,contents,send_user_id,receive_user_id,send_date,flag,type 
+				from component.user_messages 
+				where id = #{params.id}
+		]]>
+	</select>
+	<!-- 删除系统消息 -->
+	<delete id="delSysMessage">
+		<![CDATA[
+		 	delete from component.user_messages where receive_user_id = #{params.userId} and id in 
+		 ]]>
+		  <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- ################## 系统消息结束 #####################-->
+	
+	<!--得到办理库客会员的所需要的信息-->
+	<select id="getVIPProInfo" resultType="map">
+	    <![CDATA[
+				select num,pro_price,pay_channel_id,id
+				from payment.pay_pro_price 
+				where pay_channel_id in 
+				
+		]]>
+		<foreach collection="channelIDs" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+</mapper>

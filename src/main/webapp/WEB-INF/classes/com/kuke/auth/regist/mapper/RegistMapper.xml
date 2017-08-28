@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kuke.auth.regist.mapper.RegistMapper" >
+	<sql id="mysqlPage">
+		<if test="rows > 0">LIMIT #{offset}, #{rows}</if>
+	</sql>
+		
+	<select id="getCodeByMobile" resultType="java.lang.String">
+		SELECT t.code FROM auth.user_mobileinfo t where mobile = #{mobile}
+	</select>
+	
+	<select id="checkMobileCode" resultType="java.lang.Integer">
+		SELECT count(code) FROM auth.user_mobileinfo  where mobile = #{mobile}
+	</select>
+	<insert id="insertMobileCode" >
+		insert into auth.user_mobileinfo(mobile,code,create_date) values(#{mobile},#{code},NOW())
+	</insert>
+	
+	<insert id="insertUserAuth" >
+		REPLACE into auth.user_authorize (id,user_id,audio_date,last_date) values(#{id},#{uid},#{audio_date},NOW())
+	</insert>
+	<update id="updateMobileCode">
+		update auth.user_mobileinfo set code = #{code},create_date = NOW() where mobile = #{mobile}
+	</update>
+	
+	<insert id="insertUser" >
+		insert into auth.user_base(id,phone,password,isactive,reg_date,end_date,org_id,from_client) values
+			(#{user.id},#{user.phone},#{user.password},#{user.isactive},#{user.reg_date},#{user.end_date},#{user.org_id},#{user.from_client})
+	</insert>
+	<insert id="insertUserSych" >
+		insert into auth.user_base(id,email,password,isactive,reg_date,end_date,org_id) values
+			(#{user.id},#{user.email},#{user.password},#{user.isactive},#{user.reg_date},#{user.end_date},#{user.org_id})
+	</insert>
+	<insert id="insertUserBasePertain" >
+		insert into auth.user_base_pertain(user_id) values(#{user_id})
+	</insert>
+	
+	<insert id="insertUserBasePertains" >
+		insert into auth.user_base_pertain(user_id,nick_name) values(#{user_id},#{nick_name})
+	</insert>
+	
+	<select id="selectUser" resultType="java.lang.Integer">
+		select count(id) from auth.user_base where phone = #{user.phone}
+	</select>
+	
+	<select id="selectUserByEmail" resultType="Map">
+		select id from auth.user_base where email = #{user.email} or id = #{user.id} 
+	</select>
+	
+	<select id="selectUserPertain" resultType="java.lang.Integer">
+		select count(user_id) from auth.user_base_pertain where user_id = #{user_id}
+	</select>
+</mapper>

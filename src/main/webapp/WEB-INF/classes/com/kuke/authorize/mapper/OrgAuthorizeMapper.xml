@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.authorize.mapper.OrgAuthorizeMapper">
+
+<!--机构频道权限-->
+<select id="orgChannelList" parameterType="String" resultType="Map">
+    <![CDATA[
+		SELECT 
+			channel_id,max_online_num,TIMESTAMPDIFF(SECOND,NOW(),end_date) as expires_in
+		FROM auth.org_channel 
+		WHERE 1 = 1
+		AND org_id = #{orgId}
+		AND end_date > NOW()
+	]]>
+</select>
+
+
+
+
+</mapper>

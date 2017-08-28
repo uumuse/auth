@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.feedback.mapper.FeedBackMapper">
+	
+	<sql id="mysqlPage">
+		<if test="rows != 0">
+			LIMIT #{offset},#{rows}
+		</if>
+	</sql>
+	
+	<!-- 用户反馈 -->
+  	<insert id="saveFeedBack" >
+    	INSERT INTO auth.user_feedback(contact,content,email,from_client,last_date) 
+    	values (#{contact},#{content},#{email},#{from_client},NOW())
+  	</insert>  
+  	
+</mapper>

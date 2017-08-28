@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.online.mapper.OnlineMapper">
+<!--添加机构在线人数-->
+<insert id="addOrgOnline" parameterType="com.kuke.auth.online.bean.OrgOnline">
+	<![CDATA[
+		INSERT INTO log.log_online_org
+			(org_id, channel_id, user_num, time) 
+		VALUES 
+			( #{org_id}, #{channel_id}, #{user_number}, NOW() )
+	]]>
+</insert>
+<!--添加个人在线人数-->
+<insert id="addUserOnline" parameterType="com.kuke.auth.online.bean.UserOnline">
+	<![CDATA[
+		INSERT INTO log.log_online_user
+			(user_id, channel_id, time) 
+		VALUES
+			(#{user_id}, #{channel_id}, NOW() )
+	]]>
+</insert>
+
+
+
+</mapper>

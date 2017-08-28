@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kuke.authorize.mapper.UserAuthorizeMapper">
+<!--个人下载权限-->
+<select id="downloadAudioByUserId"  resultType="String">
+    <![CDATA[
+		SELECT 
+			TIMESTAMPDIFF(SECOND,NOW(),end_date) as expires_in 
+		FROM auth.user_download 
+		WHERE 1 = 1 
+		AND user_id = #{user_id}
+		AND download_id = #{down_id}
+		AND download_type = #{down_type}
+		AND end_date >= CURDATE()
+		ORDER BY end_date DESC LIMIT 1
+	]]>
+</select>
+<!--个人音频时段播放权限-->
+<select id="playAudioMonthByUserId"  resultType="String">
+    <![CDATA[
+		SELECT
+			TIMESTAMPDIFF(SECOND,NOW(),audio_date) as expires_in
+		FROM auth.user_authorize
+		WHERE 1 = 1 
+		AND user_id = #{user_id}
+		AND audio_date >= CURDATE()
+		LIMIT 1
+	]]>
+</select>
+<!--个人视频时段播放权限-->
+<select id="playVideoMonthByUserId" resultType="String">
+    <![CDATA[
+		SELECT
+			TIMESTAMPDIFF(SECOND,NOW(),video_date) as expires_in
+		FROM auth.user_authorize
+		WHERE 1 = 1 
+		AND user_id = #{user_id}
+		AND video_date >= CURDATE()
+		LIMIT 1
+	]]>
+</select>
+<!--个人视频单次播放权限-->
+<select id="playVideoByUserId" resultType="String">
+    <![CDATA[
+		SELECT 
+			TIMESTAMPDIFF(SECOND,NOW(),end_date) as expires_in 
+		FROM auth.user_video 
+		WHERE 1 = 1 
+		AND user_id = #{user_id}
+		AND video_id = #{video_id}
+		AND end_date >= NOW()
+		ORDER BY end_date DESC LIMIT 1
+	]]>
+</select>
+<!--个人LIVE时段播放权限-->
+<select id="playLiveMonthByUserId" resultType="String">
+    <![CDATA[
+		SELECT
+			TIMESTAMPDIFF(SECOND,NOW(),live_date) as expires_in
+		FROM auth.user_authorize
+		WHERE 1 = 1 
+		AND user_id = #{user_id}
+		AND live_date >= CURDATE()
+		LIMIT 1
+	]]>
+</select>
+<!--个人LIVE单次播放权限-->
+<select id="playLiveByUserId"  resultType="String">
+    <![CDATA[
+		SELECT 
+			TIMESTAMPDIFF(SECOND,NOW(),end_date) as expires_in 
+		FROM auth.user_live
+		WHERE 1 = 1 
+		AND user_id = #{user_id}
+		AND live_id = #{live_id}
+	 	AND end_date >= CURDATE()
+		ORDER BY end_date DESC LIMIT 1
+	]]>
+</select>
+<!--个人LIVE点播限-->
+<select id="playLiveVideoByUserId"  resultType="String">
+    <![CDATA[
+		SELECT 
+			TIMESTAMPDIFF(SECOND,NOW(),end_date) as expires_in 
+		FROM auth.user_video
+		WHERE 1 = 1 
+		AND user_id = #{user_id}
+		AND video_id = #{live_id}
+	 	AND end_date >= CURDATE()
+		ORDER BY end_date DESC LIMIT 1
+	]]>
+</select>
+</mapper>

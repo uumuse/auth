@@ -1,0 +1,17 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd" 
+	updateCheck="false" monitoring="autodetect"	dynamicConfig="false">
+	<diskStore path="user.home/ecache/classicat" />
+	
+	<defaultCache maxElementsInMemory="10000" eternal="false" timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="false" diskSpoolBufferSizeMB="30"
+		maxElementsOnDisk="10000000" diskPersistent="false" diskExpiryThreadIntervalSeconds="120" memoryStoreEvictionPolicy="LRU" />
+
+	<!-- 临时缓存 start -->
+	<cache name="tempCache" maxElementsInMemory="10000" eternal="false" timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="false" />
+	<!-- 临时缓存 end -->
+
+	<!-- 永久缓存 start -->
+	<cache name="permCache" maxElementsInMemory="50000" eternal="true" overflowToDisk="true" maxElementsOnDisk="0" diskPersistent="true" diskSpoolBufferSizeMB="150" />
+	<cache name="musicCache" maxElementsInMemory="50000" eternal="true" overflowToDisk="true" maxElementsOnDisk="0" diskPersistent="true" diskSpoolBufferSizeMB="600" />
+	<cache name="musicianCache" maxElementsInMemory="50000" eternal="true" overflowToDisk="true" maxElementsOnDisk="0" diskPersistent="true" diskSpoolBufferSizeMB="600" />
+	<!-- 永久缓存 end -->
+</ehcache>

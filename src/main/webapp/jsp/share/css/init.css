@@ -1,0 +1,24 @@
+html{ font-size:62.5%; line-height:1.125;}
+body,ul,ol,p,h1,h2,h3,h4,h5,h6,form,input,button,dl,dd,hr,select,option,th,tr,td,textarea{ margin:0; padding:0;}
+h1,h2,h3,h4,h5,h6{ font-size:100%; font-weight:normal;}
+input{ border:0 none; outline:none; color:#000000;}
+button,select,option{ border:0 none; outline:none; cursor:pointer;}
+iframe{ display:block; width:100%; border:0 none;}
+img{ border:0 none; vertical-align:bottom;}
+textarea{ resize:none; width:100%; border:0 none; overflow-x:hidden; overflow-y:auto; color:#000000;}
+table{ border:0 none; border-collapse:collapse;}
+li{ list-style:none;}
+object{ display:block;}
+a{ color:#000000; text-decoration:none; outline:none; hide-focus:expression(this.hideFocus=true);}
+a:visited{ color:#000000;}
+a:hover{ text-decoration:underline;}
+a:active{ color:#000000;}
+i,em{ font-style:normal;}
+b,strong{ font-weight:normal;}
+.cf:after{ content:"."; display:block; clear:both; height:0; visibility:hidden;}
+.cf{ *zoom:1;}
+.c{ overflow:hidden; *zoom:1;}
+.pr{ position:relative;}
+.fl{ float:left;}
+.fr{ float:right;}
+.eps{ overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}

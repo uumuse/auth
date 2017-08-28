@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.download.mapper.DownloadMapper">
+	<sql id="mysqlPage">
+		<if test="rows != 0">
+			LIMIT #{offset},#{rows}
+		</if>
+	</sql>
+	
+	<select id="getMoneyByIpId" resultType="String">
+			select money from auth.org_down_ip where id = #{id}
+	</select>
+	
+	<select id="getAssignInfo" resultType="java.util.HashMap">
+			select assign_money,assign_client_money,all_flag from auth.org_down_assign_money where org_id = #{org_id} and product_id = #{product_id}
+	</select>
+	
+	<select id="getUserMoney" resultType="com.kuke.auth.download.model.UserMoney">
+			select * from auth.user_money where user_id = #{user_id}
+	</select>
+	
+	<select id="getAssignUserInfo" resultType="int">
+			select count(user_id) from auth.org_down_assign where user_id = #{user_id} and org_id = #{org_id} and product_id = #{product_id}
+	</select>
+	<select id="getOrgDate" resultType="Map">
+		select channel_id,end_date,cost_flag from auth.org_channel where org_id = #{orgId}
+	</select>
+	<select id="getMusicBookById" resultType="java.util.HashMap">
+		<![CDATA[
+			select id,ctitle,etitle,music_book_file from cms.music_book where id=#{id}
+		]]>
+	</select>	
+	
+</mapper>

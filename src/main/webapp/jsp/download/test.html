@@ -1,0 +1,26 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+    <title>HTTP文件下载控件演示页面</title>
+<script>
+  var progressBar = document.getElementById("p"),
+      client = new XMLHttpRequest()
+//   client.open("GET", "magical-unicorns")
+  client.open("GET", "http://music.kuke.com/1483439808484/7c3b9d81959a1baa97e8e77d115e92fe/mp3/320kbps/DHM/G0100017182922/G0100017182922_001_001_full_wm_320.mp3")
+  client.onprogress = function(pe) {
+    if(pe.lengthComputable) {
+      progressBar.max = pe.total
+      progressBar.value = pe.loaded
+    }
+  }
+  client.onloadend = function(pe) {
+    progressBar.value = pe.loaded;
+  }
+  client.send()
+</script>
+</head>
+<html>
+<progress id="p"></progress>
+
+
+</html>

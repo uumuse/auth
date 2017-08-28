@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kuke.authorize.mapper.PianoRoomMapper">
+<!--查询个人金额-->
+<insert id="addClientInfo">
+	<![CDATA[
+		    insert into ekuke.client_info(companyname,name,occupation,tel,qq,email,profession,create_date) values (#{clientInfo.companyname},#{clientInfo.name},#{clientInfo.occupation},#{clientInfo.tel},#{clientInfo.qq},#{clientInfo.email},#{clientInfo.profession},date_format(NOW(),'%Y-%m-%d %H:%i:%S'))
+	]]>
+</insert>
+</mapper>

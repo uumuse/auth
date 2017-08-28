@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.ssologin.mapper.OrgSSOMapper">
+<!--机构基础信息-->
+<select id="getOrganizationById" resultType="com.kuke.auth.ssologin.bean.Organization">
+    <![CDATA[
+		SELECT 
+			org_id,org_name,org_area,org_url,reg_date,org_type_id,org_type_name 
+		FROM auth.org_base ob LEFT JOIN auth.org_type ot ON ob.org_type_id=ot.id
+		WHERE 1 = 1 
+		AND org_id = #{orgId}
+	]]>
+</select>
+<select id="getOrganizationToWapFlagById" resultType="String">
+    <![CDATA[
+		SELECT to_wap FROM auth.org_base WHERE  org_id = #{orgId}
+	]]>
+</select>
+
+<!--机构登录IP库-->
+<select id="getAllOrganizationIp" resultType="com.kuke.auth.ssologin.bean.OrgIp">
+    <![CDATA[
+		SELECT 
+			id,org_id,start_ip,end_ip 
+		FROM auth.org_ip 
+		WHERE 1 = 1 
+	]]>
+</select>
+<!--机构下载IP库-->
+<select id="getAllOrgDownIp" resultType="com.kuke.auth.ssologin.bean.OrgDownIp">
+    <![CDATA[
+		SELECT 
+			id,org_id,start_ip,end_ip,last_date,isused
+		FROM auth.org_down_ip 
+		WHERE isused=1
+	]]>
+</select>
+<!--机构频道库-->
+<select id="getAllOrganizationChannel" resultType="com.kuke.auth.ssologin.bean.OrgChannel">
+	<![CDATA[
+		SELECT 
+			id,org_id,channel_id,end_date,max_online_num
+		FROM auth.org_channel 
+		WHERE 1 = 1
+	]]>
+</select>
+<!--机构基础信息-->
+<select id="getOrganizationByOrgUserId" resultType="com.kuke.auth.ssologin.bean.Organization">
+    <![CDATA[
+		SELECT 
+			org_id,org_name,org_area,org_url,reg_date,org_type_id,org_type_name  
+		FROM auth.org_base ob LEFT JOIN auth.org_type ot ON ob.org_type_id=ot.id
+		WHERE 1 = 1 
+		AND org_id =(SELECT org_id FROM auth.org_user WHERE name =#{name} and password=#{pwd})
+	]]>
+</select>
+</mapper>

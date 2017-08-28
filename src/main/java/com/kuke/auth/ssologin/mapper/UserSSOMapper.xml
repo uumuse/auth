@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kuke.auth.ssologin.mapper.UserSSOMapper">
+
+<!-- 用户名  密码 -->
+<select id="checkUserLogin" resultType="com.kuke.auth.login.bean.User">
+	<![CDATA[
+		SELECT distinct
+			ub.id AS uid,ub.name AS uname,ub.reg_date,ub.end_date,ub.isactive,ub.org_id,ar.org_name,ub.sex AS usex,ub.phone AS uphone,ub.email AS uemail,ub.isPop,
+			ubp.nick_name AS unickname,ubp.user_image AS uphoto,ubp.is_verify,
+			aua.audio_date,aua.video_date,aua.live_date
+		FROM auth.user_base ub 
+		LEFT JOIN auth.user_base_pertain ubp ON ub.id = ubp.user_id
+		LEFT JOIN auth.user_authorize aua ON ub.id = aua.user_id
+		LEFT JOIN auth.org_base AS ar ON ub.org_id = ar.org_id
+		WHERE 1=1
+		AND name = #{loginName} AND password = #{loginPwd} ORDER BY reg_date DESC LIMIT 1
+	]]> 
+</select>
+
+<!-- 手机密码 -->
+<select id="checkUserLoginByPhone" resultType="com.kuke.auth.login.bean.User">
+	<![CDATA[
+		SELECT distinct
+			ub.id AS uid,ub.name AS uname,ub.reg_date,ub.end_date,ub.isactive,ub.org_id,ar.org_name,ub.sex AS usex,ub.phone AS uphone,ub.email AS uemail,ub.isPop,
+			ubp.nick_name AS unickname,ubp.user_image AS uphoto,ubp.is_verify,
+			aua.audio_date,aua.video_date,aua.live_date
+		FROM auth.user_base ub 
+		LEFT JOIN auth.user_base_pertain ubp ON ub.id = ubp.user_id
+		LEFT JOIN auth.user_authorize aua ON ub.id = aua.user_id
+		LEFT JOIN auth.org_base AS ar ON ub.org_id = ar.org_id
+		WHERE 1=1
+		AND phone = #{loginName} AND password = #{loginPwd} ORDER BY reg_date DESC LIMIT 1
+	]]> 
+</select>
+
+<!-- 邮箱密码 -->
+<select id="checkUserLoginByEmail" resultType="com.kuke.auth.login.bean.User">
+	<![CDATA[
+		SELECT distinct
+			ub.id AS uid,ub.name AS uname,ub.reg_date,ub.end_date,ub.isactive,ub.org_id,ar.org_name,ub.sex AS usex,ub.phone AS uphone,ub.email AS uemail,ub.isPop,
+			ubp.nick_name AS unickname,ubp.user_image AS uphoto,ubp.is_verify,
+			aua.audio_date,aua.video_date,aua.live_date
+		FROM auth.user_base ub 
+		LEFT JOIN auth.user_base_pertain ubp ON ub.id = ubp.user_id
+		LEFT JOIN auth.user_authorize aua ON ub.id = aua.user_id
+		LEFT JOIN auth.org_base AS ar ON ub.org_id = ar.org_id
+		WHERE 1=1
+		AND email = #{loginName} AND password = #{loginPwd} ORDER BY reg_date DESC LIMIT 1
+	]]> 
+</select>
+
+<select id="checkUserLoginById" resultType="com.kuke.auth.login.bean.User">
+
+	<![CDATA[
+		SELECT distinct
+			ub.id AS uid,ub.name AS uname,ub.reg_date,ub.end_date,ub.isactive,ub.org_id,ar.org_name,ub.sex AS usex,ub.phone AS uphone,ub.email AS uemail,ub.isPop,
+			ubp.nick_name AS unickname,ubp.user_image AS uphoto,ubp.is_verify,
+			aua.audio_date,aua.video_date,aua.live_date
+		FROM auth.user_base ub 
+		LEFT JOIN auth.user_base_pertain ubp ON ub.id = ubp.user_id
+		LEFT JOIN auth.user_authorize aua ON ub.id = aua.user_id
+		LEFT JOIN auth.org_base AS ar ON ub.org_id = ar.org_id 
+		WHERE 1=1 AND ub.id = #{userId}
+	]]> 
+</select>
+
+<select id="getUserByID" resultType="com.kuke.auth.login.bean.User">
+	<![CDATA[
+		SELECT distinct
+			ub.id AS uid,ub.name AS uname,ub.reg_date,ub.end_date,ub.isactive,ub.org_id,ar.org_name,ub.sex AS usex,ub.phone AS uphone,ub.email AS uemail,ub.isPop,
+			ubp.nick_name AS unickname,ubp.user_image AS uphoto,ubp.is_verify,
+			aua.audio_date,aua.video_date,aua.live_date,
+			(select count(id) from component.user_messages where receive_user_id = #{uid} and type = 0 and flag = 0) countMsg
+		FROM auth.user_base ub 
+		LEFT JOIN auth.user_base_pertain ubp ON ub.id = ubp.user_id
+		LEFT JOIN auth.user_authorize aua ON ub.id = aua.user_id
+		LEFT JOIN auth.org_base AS ar ON ub.org_id = ar.org_id
+		WHERE 1=1 
+ 		AND		ub.id = #{uid}
+	]]>
+	</select>
+	
+	
+<!-- 查询机构过期时间(所有的通道) -->
+<select id="queryOrgChannelDate" resultType="map">
+	<![CDATA[
+		SELECT channel_id,end_date from auth.org_channel where org_id = #{org_id}
+	]]> 
+</select>
+	
+</mapper>
+
